@@ -624,7 +624,7 @@ public class JdbcOdbcCallableStatement extends JdbcOdbcPreparedStatement impleme
             try{
                 DbParameterCollection params = command.get_Parameters();
                 for(int i=0; i<params.get_Count();i++){
-                    DbParameter param = params.get_Item(i);
+                    DbParameter param = (DbParameter)((cli.System.Collections.IList)params).get_Item(i);
                     if(parameterName.equalsIgnoreCase(param.get_ParameterName())){
                         return i+1;
                     }

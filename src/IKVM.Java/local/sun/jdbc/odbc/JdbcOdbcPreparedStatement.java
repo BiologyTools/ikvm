@@ -379,7 +379,7 @@ public class JdbcOdbcPreparedStatement extends JdbcOdbcStatement implements Prep
             while(params.get_Count() < parameterIndex){
                 params.Add(command.CreateParameter());
             }
-            return params.get_Item(parameterIndex - 1);
+            return (DbParameter)((cli.System.Collections.IList)params).get_Item(parameterIndex - 1);
         }catch(Throwable th){
             throw JdbcOdbcUtils.createSQLException(th);
         }

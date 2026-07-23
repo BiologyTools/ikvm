@@ -6,6 +6,27 @@
         <RuntimeIdentifier Condition=" '$(RuntimeIdentifier)' == 'win7-x86' ">win-x86</RuntimeIdentifier>
         <RuntimeIdentifier Condition=" '$(RuntimeIdentifier)' == 'win7-x64' ">win-x64</RuntimeIdentifier>
         <Prefer32Bit Condition=" '$(RuntimeIdentifier)' == 'win-x86' And $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net461'))">true</Prefer32Bit>
+        <IkvmDepsFileExtensionsRetryDelayMilliseconds Condition=" '$(IkvmDepsFileExtensionsRetryDelayMilliseconds)' == '' ">500</IkvmDepsFileExtensionsRetryDelayMilliseconds>
     </PropertyGroup>
+
+    <Target Name="GenerateBuildDependencyFileExtensions" AfterTargets="GenerateBuildDependencyFile" Condition=" '$(GenerateDependencyFile)' == 'true' And '$(ProjectDepsFilePath)' != '' ">
+        <GenerateDepsFileExtensions DepsFilePath="$(ProjectDepsFilePath)" AdditionalRuntimeLibraryAssets="@(AdditionalRuntimeLibraryAssets)" AdditionalRuntimeNativeAssets="@(AdditionalRuntimeNativeAssets)" ContinueOnError="WarnAndContinue" />
+        <Message Text="Retrying GenerateDepsFileExtensions for $(ProjectDepsFilePath)." Importance="high" Condition=" '$(MSBuildLastTaskResult)' != 'true' " />
+        <Sleep Duration="$(IkvmDepsFileExtensionsRetryDelayMilliseconds)" Condition=" '$(MSBuildLastTaskResult)' != 'true' " />
+        <GenerateDepsFileExtensions DepsFilePath="$(ProjectDepsFilePath)" AdditionalRuntimeLibraryAssets="@(AdditionalRuntimeLibraryAssets)" AdditionalRuntimeNativeAssets="@(AdditionalRuntimeNativeAssets)" ContinueOnError="WarnAndContinue" Condition=" '$(MSBuildLastTaskResult)' != 'true' " />
+        <Message Text="Retrying GenerateDepsFileExtensions for $(ProjectDepsFilePath)." Importance="high" Condition=" '$(MSBuildLastTaskResult)' != 'true' " />
+        <Sleep Duration="$(IkvmDepsFileExtensionsRetryDelayMilliseconds)" Condition=" '$(MSBuildLastTaskResult)' != 'true' " />
+        <GenerateDepsFileExtensions DepsFilePath="$(ProjectDepsFilePath)" AdditionalRuntimeLibraryAssets="@(AdditionalRuntimeLibraryAssets)" AdditionalRuntimeNativeAssets="@(AdditionalRuntimeNativeAssets)" Condition=" '$(MSBuildLastTaskResult)' != 'true' " />
+    </Target>
+
+    <Target Name="GeneratePublishDependencyFileExtensions" AfterTargets="GeneratePublishDependencyFile" BeforeTargets="ComputeFilesToPublish" Condition=" '$(GenerateDependencyFile)' == 'true' And '$(IntermediateDepsFilePath)' != '' ">
+        <GenerateDepsFileExtensions DepsFilePath="$(IntermediateDepsFilePath)" AdditionalRuntimeLibraryAssets="@(AdditionalRuntimeLibraryAssets)" AdditionalRuntimeNativeAssets="@(AdditionalRuntimeNativeAssets)" ContinueOnError="WarnAndContinue" />
+        <Message Text="Retrying GenerateDepsFileExtensions for $(IntermediateDepsFilePath)." Importance="high" Condition=" '$(MSBuildLastTaskResult)' != 'true' " />
+        <Sleep Duration="$(IkvmDepsFileExtensionsRetryDelayMilliseconds)" Condition=" '$(MSBuildLastTaskResult)' != 'true' " />
+        <GenerateDepsFileExtensions DepsFilePath="$(IntermediateDepsFilePath)" AdditionalRuntimeLibraryAssets="@(AdditionalRuntimeLibraryAssets)" AdditionalRuntimeNativeAssets="@(AdditionalRuntimeNativeAssets)" ContinueOnError="WarnAndContinue" Condition=" '$(MSBuildLastTaskResult)' != 'true' " />
+        <Message Text="Retrying GenerateDepsFileExtensions for $(IntermediateDepsFilePath)." Importance="high" Condition=" '$(MSBuildLastTaskResult)' != 'true' " />
+        <Sleep Duration="$(IkvmDepsFileExtensionsRetryDelayMilliseconds)" Condition=" '$(MSBuildLastTaskResult)' != 'true' " />
+        <GenerateDepsFileExtensions DepsFilePath="$(IntermediateDepsFilePath)" AdditionalRuntimeLibraryAssets="@(AdditionalRuntimeLibraryAssets)" AdditionalRuntimeNativeAssets="@(AdditionalRuntimeNativeAssets)" Condition=" '$(MSBuildLastTaskResult)' != 'true' " />
+    </Target>
     
 </Project>

@@ -84,7 +84,7 @@
     <Target Name="NasgenResponseFile" DependsOnTargets="BuildNashornTemp;CompileJava" Inputs="$(MSBuildThisFileFullPath);@(NasgenSource);@(NashornTempClasses);$(NashornTempStampFile)" Outputs="$(NasgenResponseFile)">
         <ItemGroup>
             <_NasgenJavaCompilerClasspath Include="$([System.IO.Path]::GetFullPath('$(ClassOutputPath)'))" />
-            <_NasgenJavaCompilerClasspath Include="$([System.IO.Path]::GetFullPath('$(NashornOutputPath)'))" />
+            <_NasgenJavaCompilerClasspath Include="$([System.IO.Path]::GetFullPath('$(NashornTempPath)'))" />
         </ItemGroup>
         <PropertyGroup>
             <_NasgenJavaCompilerClasspathArg>@(_NasgenJavaCompilerClasspath, '$([System.IO.Path]::PathSeparator)')</_NasgenJavaCompilerClasspathArg>

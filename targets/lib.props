@@ -51,11 +51,30 @@
         <WinSdkArch Condition="$(TargetIdentifier.EndsWith('-arm'))">arm</WinSdkArch>
     </PropertyGroup>
 
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows')) And $(TargetIdentifier.StartsWith('win-'))">
+        <_VCToolsInstallDir Condition=" '$(_VCToolsInstallDir)' == '' And '$(VCToolsInstallDir)' != '' ">$(VCToolsInstallDir)</_VCToolsInstallDir>
+        <_WindowsSdkDir Condition=" '$(_WindowsSdkDir)' == '' And '$(WindowsSdkDir)' != '' ">$(WindowsSdkDir)</_WindowsSdkDir>
+        <_WindowsSdkDir Condition=" '$(_WindowsSdkDir)' == '' And Exists('$(MSBuildProgramFiles32)\Windows Kits\10\Lib') ">$(MSBuildProgramFiles32)\Windows Kits\10\</_WindowsSdkDir>
+        <_WindowsSdkVersion Condition=" '$(_WindowsSdkVersion)' == '' And '$(WindowsTargetPlatformVersion)' != '' ">$(WindowsTargetPlatformVersion)</_WindowsSdkVersion>
+        <_WindowsSdkVersion Condition=" '$(_WindowsSdkVersion)' == '' And '$(WindowsSDKVersion)' != '' ">$(WindowsSDKVersion)</_WindowsSdkVersion>
+        <_WindowsSdkVersion Condition=" '$(_WindowsSdkVersion)' == '' And '$(WindowsSDKLibVersion)' != '' ">$(WindowsSDKLibVersion)</_WindowsSdkVersion>
+    </PropertyGroup>
+
     <ItemGroup Condition="$(TargetIdentifier.StartsWith('win-'))">
         <PreprocessorDefinitions Include="_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;WIN32;_MT;_DLL" />
         <AdditionalCompileOptions Include="-fms-extensions" />
         <AdditionalLinkOptions Include="-Wl,/NODEFAULTLIB:libucrt" />
         <Dependencies Include="ucrt;msvcrt;msvcprt;libvcruntime;kernel32" />
+    </ItemGroup>
+
+    <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows')) And $(TargetIdentifier.StartsWith('win-'))">
+        <SystemIncludeDirectories Include="$(_VCToolsInstallDir)include" Condition=" '$(_VCToolsInstallDir)' != '' And Exists('$(_VCToolsInstallDir)include') " />
+        <SystemIncludeDirectories Include="$(_WindowsSdkDir)Include\$(_WindowsSdkVersion)shared" Condition=" '$(_WindowsSdkDir)' != '' And '$(_WindowsSdkVersion)' != '' And Exists('$(_WindowsSdkDir)Include\$(_WindowsSdkVersion)shared') " />
+        <SystemIncludeDirectories Include="$(_WindowsSdkDir)Include\$(_WindowsSdkVersion)ucrt" Condition=" '$(_WindowsSdkDir)' != '' And '$(_WindowsSdkVersion)' != '' And Exists('$(_WindowsSdkDir)Include\$(_WindowsSdkVersion)ucrt') " />
+        <SystemIncludeDirectories Include="$(_WindowsSdkDir)Include\$(_WindowsSdkVersion)um" Condition=" '$(_WindowsSdkDir)' != '' And '$(_WindowsSdkVersion)' != '' And Exists('$(_WindowsSdkDir)Include\$(_WindowsSdkVersion)um') " />
+        <LibraryDirectories Include="$(_VCToolsInstallDir)lib\$(WinSdkArch)" Condition=" '$(_VCToolsInstallDir)' != '' And Exists('$(_VCToolsInstallDir)lib\$(WinSdkArch)') " />
+        <LibraryDirectories Include="$(_WindowsSdkDir)Lib\$(_WindowsSdkVersion)ucrt\$(WinSdkArch)" Condition=" '$(_WindowsSdkDir)' != '' And '$(_WindowsSdkVersion)' != '' And Exists('$(_WindowsSdkDir)Lib\$(_WindowsSdkVersion)ucrt\$(WinSdkArch)') " />
+        <LibraryDirectories Include="$(_WindowsSdkDir)Lib\$(_WindowsSdkVersion)um\$(WinSdkArch)" Condition=" '$(_WindowsSdkDir)' != '' And '$(_WindowsSdkVersion)' != '' And Exists('$(_WindowsSdkDir)Lib\$(_WindowsSdkVersion)um\$(WinSdkArch)') " />
     </ItemGroup>
 
     <PropertyGroup Condition="!$([MSBuild]::IsOSPlatform('Windows'))">

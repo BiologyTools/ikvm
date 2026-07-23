@@ -100,6 +100,7 @@
             // execute task and return newly sorted items
             var items = IkvmReferenceExportItem.Import(Items);
             await PreLoadAssembliesByNameAsync(items, cancellationToken);
+            await OnAssembliesPreLoadedAsync(cancellationToken);
             await AssignBuildInfoAsync(items, cancellationToken);
             Items = items.OrderBy(i => i.RandomIndex).Select(i => i.Item).ToArray(); // randomize order to allow multiple processes to interleave
 
@@ -109,6 +110,11 @@
             Log.LogMessage("Total time spent in IkvmReferenceExportItemPrepare: {0}", sw.Elapsed);
 
             return true;
+        }
+
+        protected virtual Task OnAssembliesPreLoadedAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -184,6 +190,11 @@
             var itemInfoTasks = items.Select(i => assemblyInfoUtil.GetAssemblyInfoAsync(i.ItemSpec, Log, cancellationToken));
             var referenceInfoTasks = References.Select(i => assemblyInfoUtil.GetAssemblyInfoAsync(i.ItemSpec, Log, cancellationToken));
             var infos = await Task.WhenAll(Enumerable.Concat(itemInfoTasks, referenceInfoTasks));
+
+            var identityTasks = infos
+                .Where(i => i.HasValue)
+                .Select(i => fileIdentityUtil.GetIdentityForFileAsync(i.Value.Path, Log, cancellationToken));
+            await Task.WhenAll(identityTasks);
 
             // build a dictionary of assembly name to assembly info
             foreach (var info in infos)
@@ -337,7 +348,69 @@
             if (identity != null)
                 return identity;
 
+            var alternatePath = GetAlternateIdentityPath(value);
+            if (alternatePath != null)
+            {
+                Log.LogMessage(MessageImportance.Low, "Using alternate identity path '{0}' for missing reference '{1}'.", alternatePath, value);
+                identity = await fileIdentityUtil.GetIdentityForFileAsync(alternatePath, Log, cancellationToken);
+                if (identity != null)
+                    return identity;
+            }
+
             throw new Exception($"Could not resolve identity for '{value}'.");
+        }
+
+        string GetAlternateIdentityPath(string value)
+        {
+            foreach (var candidate in GetAlternateIdentityPaths(value))
+                if (string.IsNullOrWhiteSpace(candidate) == false)
+                    if (File.Exists(candidate))
+                        if (string.Equals(Path.GetFullPath(candidate), Path.GetFullPath(value), StringComparison.OrdinalIgnoreCase) == false)
+                            return candidate;
+
+            return null;
+        }
+
+        IEnumerable<string> GetAlternateIdentityPaths(string value)
+        {
+            if (Path.GetExtension(value) is not ".dll" and not ".exe")
+                yield break;
+
+            var assemblyName = Path.GetFileNameWithoutExtension(value);
+            if (assemblyInfoByName.TryGetValue(assemblyName, out var assemblyInfo))
+                yield return assemblyInfo.Path;
+
+            foreach (var reference in References ?? Array.Empty<ITaskItem>())
+                if (string.Equals(Path.GetFileNameWithoutExtension(reference.ItemSpec), assemblyName, StringComparison.OrdinalIgnoreCase))
+                    yield return reference.ItemSpec;
+
+            foreach (var candidate in GetRefAssemblyFallbackPaths(value))
+                yield return candidate;
+        }
+
+        static IEnumerable<string> GetRefAssemblyFallbackPaths(string value)
+        {
+            var fullPath = Path.GetFullPath(value);
+            var fileName = Path.GetFileName(fullPath);
+            var refDir = new DirectoryInfo(Path.GetDirectoryName(fullPath) ?? string.Empty);
+            if (string.Equals(refDir.Name, "ref", StringComparison.OrdinalIgnoreCase) == false)
+                yield break;
+
+            var tfmDir = refDir.Parent;
+            var configurationDir = tfmDir?.Parent;
+            var objDir = configurationDir?.Parent;
+            var projectDir = objDir?.Parent;
+
+            if (tfmDir == null || configurationDir == null || objDir == null || projectDir == null)
+                yield break;
+
+            if (string.Equals(objDir.Name, "obj", StringComparison.OrdinalIgnoreCase) == false)
+                yield break;
+
+            yield return Path.Combine(projectDir.FullName, "bin", configurationDir.Name, tfmDir.Name, fileName);
+
+            if (projectDir.Parent != null)
+                yield return Path.Combine(projectDir.Parent.FullName, projectDir.Name + "-ref", "bin", configurationDir.Name, tfmDir.Name, fileName);
         }
 
     }

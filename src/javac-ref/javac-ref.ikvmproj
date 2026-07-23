@@ -26,10 +26,10 @@
     <Import Project="$(MSBuildThisFileDirectory)..\IKVM.MSBuild\buildTransitive\IKVM.MSBuild.targets" />
 
     <Target Name="FindJdk">
-        <FindJdk Family="8">
+        <FindJdk Family="11">
             <Output TaskParameter="JdkPath" PropertyName="JdkPath" />
         </FindJdk>
-        <Error Condition=" '$(JdkPath)' == '' " Text="Failed to locate JDK. IKVM.Java requires JDK version 8 available on the system." />
+        <Error Condition=" '$(JdkPath)' == '' " Text="Failed to locate JDK. IKVM.Java requires JDK version 11 available on the system." />
     </Target>
 
     <Target Name="ResolveJavaCompiler" DependsOnTargets="FindJdk" Condition=" '$(JavaCompilerPath)' == '' ">

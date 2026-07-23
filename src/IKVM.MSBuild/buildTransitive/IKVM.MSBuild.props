@@ -5,4 +5,10 @@
 
     <Import Project="$(MSBuildThisFileDirectory)..\..\targets\generated.props" Condition="Exists('$(MSBuildThisFileDirectory)..\..\targets\generated.props')" />
 
+    <ItemGroup>
+        <IkvmToolReference Include="$(MSBuildThisFileDirectory)..\..\javac-ref\javac-ref.ikvmproj" IsJavaCompiler="true" TargetFramework="net8.0" Condition="Exists('$(MSBuildThisFileDirectory)..\..\javac-ref\javac-ref.ikvmproj') And '@(IkvmToolReference->WithMetadataValue(`IsJavaCompiler`, `true`))' == ''" />
+        <IkvmToolReference Include="$(MSBuildThisFileDirectory)..\..\ikvmc\ikvmc.csproj" IsIkvmCompiler="true" Condition="Exists('$(MSBuildThisFileDirectory)..\..\ikvmc\ikvmc.csproj') And '@(IkvmToolReference->WithMetadataValue(`IsIkvmCompiler`, `true`))' == ''" />
+        <IkvmToolReference Include="$(MSBuildThisFileDirectory)..\..\ikvmstub\ikvmstub.csproj" IsIkvmExporter="true" Condition="Exists('$(MSBuildThisFileDirectory)..\..\ikvmstub\ikvmstub.csproj') And '@(IkvmToolReference->WithMetadataValue(`IsIkvmExporter`, `true`))' == ''" />
+    </ItemGroup>
+
 </Project>

@@ -9,6 +9,8 @@
 <Project>
     <PropertyGroup>
         <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+        <JdkBuildToolsProfile>full</JdkBuildToolsProfile>
+        <JdkBuildToolsIncludeJaxb>true</JdkBuildToolsIncludeJaxb>
     </PropertyGroup>
 
     <ItemGroup>
@@ -26,6 +28,7 @@
                 <![CDATA[
 using System;
 using System.IO;
+using System.Threading;
 
 using IKVM.ByteCode;
 using IKVM.ByteCode.Buffers;
@@ -37,6 +40,8 @@ using Microsoft.Build.Utilities;
     
 public class AddNoInliningAnnotation : Task
 {
+
+    const int MaxWriteAttempts = 5;
 
     public string SourceFile { get; set; }
     
@@ -82,10 +87,53 @@ public class AddNoInliningAnnotation : Task
         var bb = new BlobBuilder();
         cb.Serialize(bb);
 
-        using var of = File.OpenWrite(DestinationFile);
-        bb.WriteContentTo(of);
+        WriteContentWithRetry(bb);
         
         return true;
+    }
+
+    void WriteContentWithRetry(BlobBuilder bb)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(DestinationFile));
+
+        for (var attempt = 0; ; attempt++)
+        {
+            var tempFile = DestinationFile + ".tmp";
+
+            try
+            {
+                using (var of = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete))
+                    bb.WriteContentTo(of);
+
+                if (File.Exists(DestinationFile))
+                    File.Delete(DestinationFile);
+
+                File.Move(tempFile, DestinationFile);
+                return;
+            }
+            catch (IOException) when (attempt < MaxWriteAttempts - 1)
+            {
+                TryDelete(tempFile);
+                Thread.Sleep(250 * (attempt + 1));
+            }
+        }
+    }
+
+    void TryDelete(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+                File.Delete(path);
+        }
+        catch (IOException)
+        {
+
+        }
+        catch (UnauthorizedAccessException)
+        {
+
+        }
     }
 
     void CopyRuntimeVisibleAnnotationsAttribute(ClassFile cf, ClassFileBuilder cb, RuntimeVisibleAnnotationsAttribute annotations, ref AnnotationTableEncoder encoder)
@@ -137,15 +185,26 @@ public class AddNoInliningAnnotation : Task
         </ItemGroup>
     </Target>
 
-    <Target Name="ResolveRmiCompiler" Condition=" '$(JAVA_HOME)' != '' And '$(RmiCompilerPath)' == '' ">
+    <PropertyGroup>
+        <RmiCompilerJdkFamily Condition=" '$(RmiCompilerJdkFamily)' == '' ">8</RmiCompilerJdkFamily>
+    </PropertyGroup>
+
+    <Target Name="FindRmiCompilerJdk" Condition=" '$(RmiCompilerPath)' == '' And '$(RmiCompilerJdkPath)' == '' ">
+        <FindJdk Family="$(RmiCompilerJdkFamily)">
+            <Output TaskParameter="JdkPath" PropertyName="RmiCompilerJdkPath" />
+        </FindJdk>
+        <Error Condition=" '$(RmiCompilerJdkPath)' == '' " Text="Failed to locate JDK. IKVM.Java requires JDK version $(RmiCompilerJdkFamily) available on the system to run rmic." />
+    </Target>
+
+    <Target Name="ResolveRmiCompiler" DependsOnTargets="FindRmiCompilerJdk" Condition=" '$(RmiCompilerPath)' == '' ">
         <PropertyGroup>
-            <RmiCompilerPath Condition=" '$([MSBuild]::IsOSUnixLike())' == 'true' And Exists('$(JAVA_HOME)\bin\rmic') ">$([System.IO.Path]::GetFullPath('$(JAVA_HOME)\bin\rmic'))</RmiCompilerPath>
-            <RmiCompilerPath Condition=" '$([MSBuild]::IsOSUnixLike())' != 'true' And Exists('$(JAVA_HOME)\bin\rmic.exe') ">$([System.IO.Path]::GetFullPath('$(JAVA_HOME)\bin\rmic.exe'))</RmiCompilerPath>
+            <RmiCompilerPath Condition=" '$([MSBuild]::IsOSUnixLike())' == 'true' And Exists('$(RmiCompilerJdkPath)\bin\rmic') ">$([System.IO.Path]::GetFullPath('$(RmiCompilerJdkPath)\bin\rmic'))</RmiCompilerPath>
+            <RmiCompilerPath Condition=" '$([MSBuild]::IsOSUnixLike())' != 'true' And Exists('$(RmiCompilerJdkPath)\bin\rmic.exe') ">$([System.IO.Path]::GetFullPath('$(RmiCompilerJdkPath)\bin\rmic.exe'))</RmiCompilerPath>
             <RmiCompilerArgs>-J-client -J-Xms128m</RmiCompilerArgs>
             <RmiCompilerExec Condition=" '$(RmiCompilerPath)' != '' ">"$(RmiCompilerPath)" $(RmiCompilerArgs)</RmiCompilerExec>
         </PropertyGroup>
-        <Message Text="Using rmic executable found in JAVA_HOME at '$(RmiCompilerPath)'." Importance="high" Condition=" '$(RmiCompilerPath)' != '' " />
-        <Error Text="Could not find rmic executable." Condition=" '$(RmiCompilerPath)' == '' " />
+        <Message Text="Using rmic executable found at '$(RmiCompilerPath)' from JDK family $(RmiCompilerJdkFamily)." Importance="high" Condition=" '$(RmiCompilerPath)' != '' " />
+        <Error Text="Could not find rmic executable in JDK path '$(RmiCompilerJdkPath)'." Condition=" '$(RmiCompilerPath)' == '' " />
     </Target>
 
     <PropertyGroup>
@@ -155,10 +214,10 @@ public class AddNoInliningAnnotation : Task
 
     <Target Name="_BuildRmiStubs" DependsOnTargets="ResolveRmiCompiler;ResolveRmiStubInputItems" Inputs="@(RmiStubInputItem)" Outputs="$(RmiStubsStampFile)">
         <ItemGroup>
-            <_RmiCompilerClasspath Include="@(Classpath);$(ClassOutputPath)" />
+            <_RmiCompilerClasspath Include="@(BootClasspath);@(Classpath);$(ClassOutputPath)" />
             <_RmiCompilerArgs Include="@(RmiCompilerArgs)" />
             <_RmiCompilerArgs Include="-nowarn" />
-            <_RmiCompilerArgs Include="-bootclasspath" />
+            <_RmiCompilerArgs Include="-classpath" />
             <_RmiCompilerArgs Include="@(_RmiCompilerClasspath, '$([System.IO.Path]::PathSeparator)')" />
             <_RmiCompilerArgs Include="-d" />
             <_RmiCompilerArgs Include="$(RmiStubsOutputPath)" />
@@ -647,6 +706,28 @@ public class WriteStandardCharsets : Task
     
     public override bool Execute()
     {
+        if (File.Exists(AliasesClassFile) == false)
+        {
+            Log.LogError($@"Could not locate generated aliases source file '{AliasesClassFile}'.");
+            return false;
+        }
+
+        if (File.Exists(ClassesClassFile) == false)
+        {
+            Log.LogError($@"Could not locate generated classes source file '{ClassesClassFile}'.");
+            return false;
+        }
+
+        if (File.Exists(CacheClassFile) == false)
+        {
+            Log.LogError($@"Could not locate generated cache source file '{CacheClassFile}'.");
+            return false;
+        }
+
+        var outputDir = Path.GetDirectoryName(OutputFile);
+        if (string.IsNullOrWhiteSpace(outputDir) == false)
+            Directory.CreateDirectory(outputDir);
+
         using var o = new StreamWriter(File.Open(OutputFile, FileMode.Create));
         o.WriteLine($@"package {Package};");
         o.WriteLine($@"");
@@ -690,7 +771,6 @@ public class WriteStandardCharsets : Task
 
     <PropertyGroup>
         <StandardCharsetsOutputPath>$(IntermediateOutputPath)jdk_stdchar\</StandardCharsetsOutputPath>
-        <StandardCharsetsTempPath>$(IntermediateOutputPath)jdk_stdchar_tmp\</StandardCharsetsTempPath>
     </PropertyGroup>
 
     <Target Name="GenerateStandardCharsets" Inputs="$(MSBuildThisFileFullPath);$(JdkBuildToolsStampFile);$(OpenJdkDir)jdk\src\share\classes\sun\nio\cs\standard-charsets" Outputs="$(StandardCharsetsOutputPath)sun\nio\cs\StandardCharsets.java">
@@ -698,19 +778,23 @@ public class WriteStandardCharsets : Task
         <Error Text="java could not be located at '$(JavaPath)'." Condition="!Exists('$(JavaPath)')" />
         <Exec Command="chmod +x $(JavaPath) >/dev/null 2>&amp;1" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="true" StandardErrorImportance="low" ContinueOnError="true" Condition="$([MSBuild]::IsOSUnixLike())" />
 
-        <RemoveDir Directories="$(StandardCharsetsTempPath)" />
-        <MakeDir Directories="$(StandardCharsetsTempPath)" />
+        <PropertyGroup>
+            <_StandardCharsetsTempPath>$(IntermediateOutputPath)jdk_stdchar_tmp\$([System.IO.Path]::GetFileNameWithoutExtension($([System.IO.Path]::GetRandomFileName())))\</_StandardCharsetsTempPath>
+        </PropertyGroup>
 
-        <ReadStandardCharsets SourceFile="$(OpenJdkDir)jdk\src\share\classes\sun\nio\cs\standard-charsets" ClassesFile="$(StandardCharsetsTempPath)classes" AliasesFile="$(StandardCharsetsTempPath)aliases">
+        <RemoveDir Directories="$(_StandardCharsetsTempPath)" />
+        <MakeDir Directories="$(_StandardCharsetsTempPath)" />
+
+        <ReadStandardCharsets SourceFile="$(OpenJdkDir)jdk\src\share\classes\sun\nio\cs\standard-charsets" ClassesFile="$(_StandardCharsetsTempPath)classes" AliasesFile="$(_StandardCharsetsTempPath)aliases">
             <Output TaskParameter="Copyright" PropertyName="_Copyright" />
             <Output TaskParameter="Package" PropertyName="_Package" />
             <Output TaskParameter="Class" PropertyName="_Class" />
             <Output TaskParameter="Charsets" ItemName="_Charsets" />
         </ReadStandardCharsets>
 
-        <Exec Command="$(JavaExec) -cp $(JdkBuildToolsOutputPath) build.tools.hasher.Hasher -i Aliases &lt; $(StandardCharsetsTempPath)aliases &gt; $(StandardCharsetsTempPath)Aliases.java" />
-        <Exec Command="$(JavaExec) -cp $(JdkBuildToolsOutputPath) build.tools.hasher.Hasher -i Classes &lt; $(StandardCharsetsTempPath)classes &gt; $(StandardCharsetsTempPath)Classes.java" />
-        <Exec Command="$(JavaExec) -cp $(JdkBuildToolsOutputPath) build.tools.hasher.Hasher -i -e Cache -t Charset &lt; $(StandardCharsetsTempPath)classes &gt; $(StandardCharsetsTempPath)Cache.java" />
+        <Exec Command="$(JavaExec) -cp $(JdkBuildToolsOutputPath) build.tools.hasher.Hasher -i Aliases &lt; $(_StandardCharsetsTempPath)aliases &gt; $(_StandardCharsetsTempPath)Aliases.java" />
+        <Exec Command="$(JavaExec) -cp $(JdkBuildToolsOutputPath) build.tools.hasher.Hasher -i Classes &lt; $(_StandardCharsetsTempPath)classes &gt; $(_StandardCharsetsTempPath)Classes.java" />
+        <Exec Command="$(JavaExec) -cp $(JdkBuildToolsOutputPath) build.tools.hasher.Hasher -i -e Cache -t Charset &lt; $(_StandardCharsetsTempPath)classes &gt; $(_StandardCharsetsTempPath)Cache.java" />
 
         <RemoveDir Directories="$(StandardCharsetsOutputPath)sun\nio\cs" />
         <MakeDir Directories="$(StandardCharsetsOutputPath)sun\nio\cs" />
@@ -720,11 +804,11 @@ public class WriteStandardCharsets : Task
             Package="$(_Package)"
             Class="$(_Class)"
             Charsets="@(_Charsets)"
-            AliasesClassFile="$(StandardCharsetsTempPath)Aliases.java"
-            ClassesClassFile="$(StandardCharsetsTempPath)Classes.java"
-            CacheClassFile="$(StandardCharsetsTempPath)Cache.java" />
+            AliasesClassFile="$(_StandardCharsetsTempPath)Aliases.java"
+            ClassesClassFile="$(_StandardCharsetsTempPath)Classes.java"
+            CacheClassFile="$(_StandardCharsetsTempPath)Cache.java" />
 
-        <RemoveDir Directories="$(StandardCharsetsTempPath)" />
+        <RemoveDir Directories="$(_StandardCharsetsTempPath)" />
         <ItemGroup>
             <Compile Include="$(StandardCharsetsOutputPath)sun\nio\cs\StandardCharsets.java" />
         </ItemGroup>
@@ -1281,6 +1365,8 @@ File.WriteAllLines(Path, File.ReadAllLines(Path).TakeWhile(i => i.Contains("#BIN
         <ItemGroup>
             <_Src Remove="@(_Src)" />
             <_Src Include="%(AwtIcons.Identity)" />
+            <_DataTmp Remove="@(_DataTmp)" />
+            <_DataTmp Include="$(IconsOutputPath)sun\awt\%(AwtIcons.ClassName).data.tmp" />
             <_Tmp Remove="@(_Tmp)" />
             <_Tmp Include="$(IconsOutputPath)sun\awt\%(AwtIcons.ClassName).java.tmp" />
             <_Dst Remove="@(_Dst)" />
@@ -1288,16 +1374,23 @@ File.WriteAllLines(Path, File.ReadAllLines(Path).TakeWhile(i => i.Contains("#BIN
         </ItemGroup>
 
         <MakeDir Directories="$(IconsOutputPath)sun\awt\" />
+        <Delete Files="@(_DataTmp)" Condition="Exists('@(_DataTmp)')" />
         <Delete Files="@(_Tmp)" Condition="Exists('@(_Tmp)')" />
         <WriteLinesToFile Lines="package sun.awt%3b" File="@(_Tmp)" />
         <WriteLinesToFile Lines="public class %(AwtIcons.ClassName) {" File="@(_Tmp)" />
         <WriteLinesToFile Lines="public static int[] %(AwtIcons.ShortName) = {" File="@(_Tmp)" />
-        <Exec Command="$(JavaExec) -Djava.awt.headless=true -cp $(JdkBuildToolsOutputPath) build.tools.icondata.awt.ToBin &lt; @(_Src) &gt;&gt; @(_Tmp)" />
+        <Exec Command="$(JavaExec) -Djava.awt.headless=true -cp $(JdkBuildToolsOutputPath) build.tools.icondata.awt.ToBin &lt; @(_Src) &gt; @(_DataTmp)" />
+        <ReadLinesFromFile File="@(_DataTmp)">
+            <Output TaskParameter="Lines" ItemName="_IconDataLines" />
+        </ReadLinesFromFile>
+        <WriteLinesToFile Lines="@(_IconDataLines)" File="@(_Tmp)" />
         <WriteLinesToFile Lines="}%3b" File="@(_Tmp)" />
         <WriteLinesToFile Lines="}" File="@(_Tmp)" />
         <Move SourceFiles="@(_Tmp)" DestinationFiles="@(_Dst)" OverwriteReadOnlyFiles="true" />
 
         <ItemGroup>
+            <_IconDataLines Remove="@(_IconDataLines)" />
+            <FileWrites Include="@(_DataTmp)" />
             <FileWrites Include="@(_Tmp)" />
             <FileWrites Include="@(_Dst)" />
             <Compile Include="@(_Dst)" />
@@ -1480,8 +1573,8 @@ File.WriteAllLines(Path, File.ReadAllLines(Path).TakeWhile(i => i.Contains("#BIN
         </ItemGroup>
 
         <MakeDir Directories="$(BreakIteratorOutputPath)" />
-        <Message Text="$(JavaCompilerExec) @(BreakIteratorSources, ' ') -d @(_BreakIteratorOutputPath)" />
-        <Exec Command="$(JavaCompilerExec) @(BreakIteratorSources, ' ') -d @(_BreakIteratorOutputPath)" />
+        <Message Text="$(JavaCompilerExec) -source 8 -target 8 @(BreakIteratorSources, ' ') -d @(_BreakIteratorOutputPath)" />
+        <Exec Command="$(JavaCompilerExec) -source 8 -target 8 @(BreakIteratorSources, ' ') -d @(_BreakIteratorOutputPath)" />
 
         <ItemGroup>
             <FileWrites Include="@(BreakIteratorOutputs)" />
@@ -1502,12 +1595,16 @@ File.WriteAllLines(Path, File.ReadAllLines(Path).TakeWhile(i => i.Contains("#BIN
         </ItemGroup>
 
         <MakeDir Directories="$(BreakIteratorOutputPath)$(BreakIteratorPackage)" />
-        <Message Text="$(JavaExec) -cp $(JdkBuildToolsOutputPath) -Xbootclasspath/p:@(_BreakIteratorClasspath) build.tools.generatebreakiteratordata.GenerateBreakIteratorData -o @(_BreakIteratorOutputArg) -spec $(UnicodeDataDir)UnicodeData.txt" />
-        <Exec Command="$(JavaExec) -cp $(JdkBuildToolsOutputPath) -Xbootclasspath/p:@(_BreakIteratorClasspath) build.tools.generatebreakiteratordata.GenerateBreakIteratorData -o @(_BreakIteratorOutputArg) -spec $(UnicodeDataDir)UnicodeData.txt" />
+        <Message Text="$(JavaExec) --patch-module java.base=$(JdkBuildToolsOutputPath);@(_BreakIteratorClasspath) -m java.base/build.tools.generatebreakiteratordata.GenerateBreakIteratorData -o @(_BreakIteratorOutputArg) -spec $(UnicodeDataDir)UnicodeData.txt" Condition=" '$(JavaToolsModuleName)' != '' " />
+        <Exec Command="$(JavaExec) --patch-module java.base=$(JdkBuildToolsOutputPath);@(_BreakIteratorClasspath) -m java.base/build.tools.generatebreakiteratordata.GenerateBreakIteratorData -o @(_BreakIteratorOutputArg) -spec $(UnicodeDataDir)UnicodeData.txt" Condition=" '$(JavaToolsModuleName)' != '' " />
+        <Message Text="$(JavaExec) -cp $(JdkBuildToolsOutputPath) -Xbootclasspath/p:@(_BreakIteratorClasspath) build.tools.generatebreakiteratordata.GenerateBreakIteratorData -o @(_BreakIteratorOutputArg) -spec $(UnicodeDataDir)UnicodeData.txt" Condition=" '$(JavaToolsModuleName)' == '' " />
+        <Exec Command="$(JavaExec) -cp $(JdkBuildToolsOutputPath) -Xbootclasspath/p:@(_BreakIteratorClasspath) build.tools.generatebreakiteratordata.GenerateBreakIteratorData -o @(_BreakIteratorOutputArg) -spec $(UnicodeDataDir)UnicodeData.txt" Condition=" '$(JavaToolsModuleName)' == '' " />
 
         <MakeDir Directories="$(BreakIteratorOutputPath)$(BreakIteratorPackage)\th" />
-        <Message Text="$(JavaExec) -cp $(JdkBuildToolsOutputPath) -Xbootclasspath/p:@(_BreakIteratorClasspath) build.tools.generatebreakiteratordata.GenerateBreakIteratorData -o @(_BreakIteratorOutputArg) -spec $(UnicodeDataDir)UnicodeData.txt -language th" />
-        <Exec Command="$(JavaExec) -cp $(JdkBuildToolsOutputPath) -Xbootclasspath/p:@(_BreakIteratorClasspath) build.tools.generatebreakiteratordata.GenerateBreakIteratorData -o @(_BreakIteratorOutputArg) -spec $(UnicodeDataDir)UnicodeData.txt -language th" />
+        <Message Text="$(JavaExec) --patch-module java.base=$(JdkBuildToolsOutputPath);@(_BreakIteratorClasspath) -m java.base/build.tools.generatebreakiteratordata.GenerateBreakIteratorData -o @(_BreakIteratorOutputArg) -spec $(UnicodeDataDir)UnicodeData.txt -language th" Condition=" '$(JavaToolsModuleName)' != '' " />
+        <Exec Command="$(JavaExec) --patch-module java.base=$(JdkBuildToolsOutputPath);@(_BreakIteratorClasspath) -m java.base/build.tools.generatebreakiteratordata.GenerateBreakIteratorData -o @(_BreakIteratorOutputArg) -spec $(UnicodeDataDir)UnicodeData.txt -language th" Condition=" '$(JavaToolsModuleName)' != '' " />
+        <Message Text="$(JavaExec) -cp $(JdkBuildToolsOutputPath) -Xbootclasspath/p:@(_BreakIteratorClasspath) build.tools.generatebreakiteratordata.GenerateBreakIteratorData -o @(_BreakIteratorOutputArg) -spec $(UnicodeDataDir)UnicodeData.txt -language th" Condition=" '$(JavaToolsModuleName)' == '' " />
+        <Exec Command="$(JavaExec) -cp $(JdkBuildToolsOutputPath) -Xbootclasspath/p:@(_BreakIteratorClasspath) build.tools.generatebreakiteratordata.GenerateBreakIteratorData -o @(_BreakIteratorOutputArg) -spec $(UnicodeDataDir)UnicodeData.txt -language th" Condition=" '$(JavaToolsModuleName)' == '' " />
 
         <ItemGroup>
             <FileWrites Include="@(BreakIteratorData)" />

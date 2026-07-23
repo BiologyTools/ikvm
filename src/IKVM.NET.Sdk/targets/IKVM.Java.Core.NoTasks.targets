@@ -160,7 +160,7 @@ Value = b.ToString();
     </Target>
 
     <!-- Override IKVM.NET.Sdk: directly invoke javac executable  -->
-    <Target Name="_CompileJavaResponseFile" DependsOnTargets="ResolveJavaCompiler;ExportReferences;GetReferenceClasspath;BeforeCompile">
+    <Target Name="_CompileJavaResponseFile" DependsOnTargets="ResolveJavaCompiler;ExportReferences;GetReferenceClasspath;GetReferenceBootClasspath;BeforeCompile">
         <Error Text="Could not locate javac executable." Condition=" '$(JavaCompilerPath)' == '' " />
         <Error Text="javac could not be located at '$(JavaCompilerPath)'." Condition="!Exists('$(JavaCompilerPath)')" />
         <Exec Command="chmod +x $(JavaCompilerPath) >/dev/null 2>&amp;1" IgnoreExitCode="true" ContinueOnError="true" Condition="$([MSBuild]::IsOSUnixLike())" />
@@ -220,9 +220,7 @@ Value = b.ToString();
             <_CompileJavaStartTime>$([System.DateTime]::Now.Ticks)</_CompileJavaStartTime>
         </PropertyGroup>
 
-        <RemoveDir Directories="$(ClassOutputPath)" />
         <MakeDir Directories="$(ClassOutputPath)" />
-        <RemoveDir Directories="$(HeaderOutputPath)" />
         <MakeDir Directories="$(HeaderOutputPath)" />
 
         <Message Text="$(JavaCompilerExec) @$(_CompileJavaResponseFile)" />
@@ -231,7 +229,7 @@ Value = b.ToString();
         <!-- Remove files that were not modified by this compilation. -->
         <ItemGroup>
             <_CompileJavaClassFiles Include="$(ClassOutputPath)**\*.class" />
-            <_CompileJavaHeaderFiles Include="$(ClassOutputPath)**\*.h" />
+            <_CompileJavaHeaderFiles Include="$(HeaderOutputPath)**\*.h" />
             <_CompileJavaStaleFiles Include="@(_CompileJavaClassFiles);@(_CompileJavaHeaderFiles)" Condition=" '%(ModifiedTime)' == '' Or $([System.DateTime]::Parse('%(ModifiedTime)').Ticks) &lt; $(_CompileJavaStartTime) " />
             <_CompileJavaClassFiles Remove="@(_CompileJavaClassFiles)" />
             <_CompileJavaHeaderFiles Remove="@(_CompileJavaHeaderFiles)" />

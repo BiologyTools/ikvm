@@ -769,6 +769,18 @@ namespace IKVM.Tools.Importer
                     }
                 }
 
+                if (HasWildcardPattern(fileName) == false)
+                {
+                    if (File.Exists(fileName))
+                    {
+                        ProcessFile(context, compiler, options, diagnostics, null, fileName);
+                        continue;
+                    }
+
+                    diagnostics.InputFileNotFound(fileName);
+                    continue;
+                }
+
                 string[] files = null;
                 try
                 {
@@ -779,7 +791,6 @@ namespace IKVM.Tools.Importer
                 {
 
                 }
-
 
                 if (files == null || files.Length == 0)
                 {
@@ -793,6 +804,11 @@ namespace IKVM.Tools.Importer
                     }
                 }
             }
+        }
+
+        static bool HasWildcardPattern(string path)
+        {
+            return path.IndexOf('*') >= 0 || path.IndexOf('?') >= 0;
         }
 
         internal static bool TryParseVersion(string str, out Version version)

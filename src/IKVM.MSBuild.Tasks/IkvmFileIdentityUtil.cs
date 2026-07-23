@@ -75,6 +75,8 @@
             foreach (var i in cache)
             {
                 var (lastWriteTimeUtc, identity) = await i.Value;
+                if (string.IsNullOrWhiteSpace(identity))
+                    continue;
 
                 root.Add(
                     new XElement(XML_FILE_ELEMENT_NAME,
@@ -96,7 +98,29 @@
             if (string.IsNullOrWhiteSpace(path))
                 throw new ArgumentException($"'{nameof(path)}' cannot be null or whitespace.", nameof(path));
 
-            return (await cache.GetOrAdd(path, path => CreateIdentityForFileAsync(path, log, cancellationToken))).Identity;
+            for (var attempt = 0; attempt < 2; attempt++)
+            {
+                var task = cache.GetOrAdd(path, path => CreateIdentityForFileAsync(path, log, cancellationToken));
+                var result = await task;
+                if (string.IsNullOrWhiteSpace(result.Identity) == false)
+                    return result.Identity;
+
+                if (File.Exists(path) == false)
+                {
+                    RemoveCachedIdentity(path, task);
+                    return null;
+                }
+
+                RemoveCachedIdentity(path, task);
+            }
+
+            return null;
+        }
+
+        void RemoveCachedIdentity(string path, Task<(DateTime LastWriteTimeUtc, string Identity)> task)
+        {
+            if (cache.TryGetValue(path, out var current) && ReferenceEquals(current, task))
+                cache.TryRemove(path, out _);
         }
 
         /// <summary>

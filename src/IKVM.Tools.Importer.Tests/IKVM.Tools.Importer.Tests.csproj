@@ -4,6 +4,9 @@
 		<PreserveCompilationContext>true</PreserveCompilationContext>
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 		<RunSettingsFilePath>$(MSBuildProjectDirectory)\IKVM.Tools.Importer.Tests.runsettings</RunSettingsFilePath>
+		<EnableMicrosoftTestingExtensionsCodeCoverage>false</EnableMicrosoftTestingExtensionsCodeCoverage>
+		<DisableMsCoverageReferencedPathMaps>true</DisableMsCoverageReferencedPathMaps>
+		<BuildInParallel>false</BuildInParallel>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -33,37 +36,46 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<IncludeProjectReference Include="..\IKVM.Runtime\IKVM.Runtime.csproj">
+		<IncludeProjectReference Include="..\IKVM.Runtime\IKVM.Runtime.csproj" Condition=" '$(TargetFramework)' != 'net472' ">
 			<SetTargetFramework>TargetFramework=net472</SetTargetFramework>
 			<IncludeTargetPath>lib\net472\</IncludeTargetPath>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</IncludeProjectReference>
-		<IncludeProjectReference Include="..\IKVM.Java\IKVM.Java.ikvmproj">
+		<IncludeProjectReference Include="..\IKVM.Java\IKVM.Java.ikvmproj" Condition=" '$(TargetFramework)' != 'net472' ">
 			<SetTargetFramework>TargetFramework=net472</SetTargetFramework>
 			<IncludeTargetPath>lib\net472\</IncludeTargetPath>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</IncludeProjectReference>
-		<IncludeProjectReference Include="..\IKVM.Runtime\IKVM.Runtime.csproj">
+		<IncludeProjectReference Include="..\IKVM.Runtime\IKVM.Runtime.csproj" Condition=" '$(TargetFramework)' != 'net6.0' ">
 			<SetTargetFramework>TargetFramework=net6.0</SetTargetFramework>
 			<IncludeTargetPath>lib\net6.0\</IncludeTargetPath>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</IncludeProjectReference>
-		<IncludeProjectReference Include="..\IKVM.Java\IKVM.Java.ikvmproj">
+		<IncludeProjectReference Include="..\IKVM.Java\IKVM.Java.ikvmproj" Condition=" '$(TargetFramework)' != 'net6.0' ">
 			<SetTargetFramework>TargetFramework=net6.0</SetTargetFramework>
 			<IncludeTargetPath>lib\net6.0\</IncludeTargetPath>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</IncludeProjectReference>
-		<IncludeProjectReference Include="..\IKVM.Runtime\IKVM.Runtime.csproj">
+		<IncludeProjectReference Include="..\IKVM.Runtime\IKVM.Runtime.csproj" Condition=" '$(TargetFramework)' != 'net8.0' ">
 			<SetTargetFramework>TargetFramework=net8.0</SetTargetFramework>
 			<IncludeTargetPath>lib\net8.0\</IncludeTargetPath>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</IncludeProjectReference>
-		<IncludeProjectReference Include="..\IKVM.Java\IKVM.Java.ikvmproj">
+		<IncludeProjectReference Include="..\IKVM.Java\IKVM.Java.ikvmproj" Condition=" '$(TargetFramework)' != 'net8.0' ">
 			<SetTargetFramework>TargetFramework=net8.0</SetTargetFramework>
 			<IncludeTargetPath>lib\net8.0\</IncludeTargetPath>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</IncludeProjectReference>
 	</ItemGroup>
+
+	<Target Name="CopyCurrentFrameworkIkvmAssemblies" AfterTargets="Build">
+		<ItemGroup>
+			<_CurrentFrameworkIkvmAssemblies Include="@(ReferenceCopyLocalPaths)" Condition=" '%(Filename)' == 'IKVM.Runtime' Or '%(Filename)' == 'IKVM.Java' " />
+		</ItemGroup>
+
+		<MakeDir Directories="$(OutDir)lib\$(TargetFramework)\" Condition=" '@(_CurrentFrameworkIkvmAssemblies)' != '' " />
+		<Copy SourceFiles="@(_CurrentFrameworkIkvmAssemblies)" DestinationFolder="$(OutDir)lib\$(TargetFramework)\" SkipUnchangedFiles="true" Condition=" '@(_CurrentFrameworkIkvmAssemblies)' != '' " />
+	</Target>
 
 	<ItemGroup>
 		<None Update="IKVM.Tools.Importer.Tests.runsettings">

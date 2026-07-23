@@ -15,6 +15,7 @@
     </PropertyGroup>
 
     <UsingTask TaskName="IkvmCleanDir" AssemblyFile="$(IkvmMSBuildTaskAssembly)" TaskFactory="$(IkvmMSBuildTaskFactory)" Condition="Exists('$(IkvmMSBuildTaskAssembly)')" />
+    <UsingTask TaskName="FindJdk" AssemblyFile="$(IkvmMSBuildTaskAssembly)" TaskFactory="$(IkvmMSBuildTaskFactory)" Condition="Exists('$(IkvmMSBuildTaskAssembly)')" />
     <UsingTask TaskName="IkvmResolveNearestRuntimeIdentifier" AssemblyFile="$(IkvmMSBuildTaskAssembly)" TaskFactory="$(IkvmMSBuildTaskFactory)" Condition="Exists('$(IkvmMSBuildTaskAssembly)')" />
     <UsingTask TaskName="IkvmReferenceItemPrepare" AssemblyFile="$(IkvmMSBuildTaskAssembly)" TaskFactory="$(IkvmMSBuildTaskFactory)" Condition="Exists('$(IkvmMSBuildTaskAssembly)')" />
     <UsingTask TaskName="IkvmReferenceExportItemPrepare" AssemblyFile="$(IkvmMSBuildTaskAssembly)" TaskFactory="$(IkvmMSBuildTaskFactory)" Condition="Exists('$(IkvmMSBuildTaskAssembly)')" />

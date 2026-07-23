@@ -33,6 +33,7 @@
         <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
         <Bootstrap>true</Bootstrap>
         <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+        <JavaCompilerArgs Condition=" '$(JavaCompilerArgs)' == '' ">-J-Xms128m -J-Xmx768m</JavaCompilerArgs>
     </PropertyGroup>
 
     <ItemGroup>

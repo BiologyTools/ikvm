@@ -13,7 +13,8 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <_IkvmReferenceExportItemPrepareStateFile Condition=" '$(_IkvmReferenceExportItemPrepareStateFile)' == '' ">$(IntermediateOutputPath)$(MSBuildProjectFile).IkvmReferenceExportItemPrepare.cache</_IkvmReferenceExportItemPrepareStateFile>
+        <EnableIkvmReferenceExportItemPrepareStateFile Condition=" '$(EnableIkvmReferenceExportItemPrepareStateFile)' == '' ">false</EnableIkvmReferenceExportItemPrepareStateFile>
+        <_IkvmReferenceExportItemPrepareStateFile Condition=" '$(EnableIkvmReferenceExportItemPrepareStateFile)' == 'true' And '$(_IkvmReferenceExportItemPrepareStateFile)' == '' ">$(IntermediateOutputPath)$(MSBuildProjectFile).IkvmReferenceExportItemPrepare.cache</_IkvmReferenceExportItemPrepareStateFile>
     </PropertyGroup>
 
     <!-- References may be derived from various sources: ProjectReference or IkvmReference. In each case, compilation of the Java
@@ -94,7 +95,8 @@
 
     <Target Name="ExportReferences" DependsOnTargets="$(ExportReferencesDependsOn)">
         <ItemGroup>
-            <Classpath Include="@(ReferenceExport->'%(CachePath)')" />
+            <Classpath Include="@(ReferenceExport->'%(CachePath)')" Condition=" '$(Bootstrap)' != 'true' " />
+            <BootClasspath Include="@(ReferenceExport->'%(CachePath)')" Condition=" '$(Bootstrap)' == 'true' " />
         </ItemGroup>
     </Target>
 
@@ -194,7 +196,9 @@ Files = files.ToArray();
     </PropertyGroup>
 
     <PropertyGroup>
-        <_AssemblyTempPath>$(IntermediateOutputPath)java\</_AssemblyTempPath>
+        <_AssemblyTempRootPath>$(IntermediateOutputPath)java\</_AssemblyTempRootPath>
+        <_AssemblyTempNonce Condition=" '$(_AssemblyTempNonce)' == '' ">$([System.Guid]::NewGuid().ToString('N'))</_AssemblyTempNonce>
+        <_AssemblyTempPath>$(_AssemblyTempRootPath)$(_AssemblyTempNonce)\</_AssemblyTempPath>
         <_ExcludeFilePath>$(IntermediateOutputPath)$(MSBuildProjectName).exclude</_ExcludeFilePath>
         <_IkvmCompilerResponseFile>$(IntermediateOutputPath)$(MSBuildProjectName).ikvmc.rsp</_IkvmCompilerResponseFile>
     </PropertyGroup>
@@ -228,7 +232,7 @@ Files = files.ToArray();
     <Target Name="CleanCoreCompile">
         <Delete Files="$(_ExcludeFilePath)" />
         <Delete Files="$(_IkvmCompilerResponseFile)" />
-        <RemoveDir Directories="$(_AssemblyTempPath)" />
+        <RemoveDir Directories="$(_AssemblyTempRootPath)" />
     </Target>
 
     <PropertyGroup>

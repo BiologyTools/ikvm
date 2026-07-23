@@ -9,6 +9,11 @@
         <DebugSymbols>false</DebugSymbols>
         <DebugType>none</DebugType>
         <TargetsTriggeredByCompilation>$(TargetsTriggeredByCompilation);ConvertRefAssembly</TargetsTriggeredByCompilation>
+        <EnableJavaRefPlugin Condition=" '$(EnableJavaRefPlugin)' == '' ">false</EnableJavaRefPlugin>
+        <JavaRefPluginDirectory Condition=" '$(JavaRefPluginDirectory)' == '' ">$(IntermediateOutputPath)maven</JavaRefPluginDirectory>
+        <IntermediateOutputPath Condition=" '$(IkvmJavaRuntimeIdentifier)' != '' And '$(IkvmJavaRuntimeIdentifier)' != 'ref' And '$(TargetFramework)' != '' ">obj\$(Configuration)\$(TargetFramework)\$(IkvmJavaRuntimeIdentifier)\</IntermediateOutputPath>
+        <OutputPath Condition=" '$(IkvmJavaRuntimeIdentifier)' != '' And '$(IkvmJavaRuntimeIdentifier)' != 'ref' And '$(TargetFramework)' != '' ">bin\$(Configuration)\$(TargetFramework)\$(IkvmJavaRuntimeIdentifier)\</OutputPath>
+        <IntermediateOutputPath Condition=" '$(RuntimeIdentifier)' != '' And '$(TargetFramework)' != '' ">obj\$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\</IntermediateOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -31,24 +36,24 @@
         <Compile Include="SocketOptionRegistry.java" />
     </ItemGroup>
 
-	<Target Name="DownloadMavenArtifacts" Inputs="dep.pom" Outputs="$(IntermediateOutputPath)maven\.stamp">
+	<Target Name="DownloadMavenArtifacts" Condition=" '$(EnableJavaRefPlugin)' == 'true' " Inputs="dep.pom" Outputs="$(JavaRefPluginDirectory)\.stamp">
 		<ItemGroup>
-			<_Existing Include="$(IntermediateOutputPath)maven\**\*" />
+			<_Existing Include="$(JavaRefPluginDirectory)\**\*" />
 		</ItemGroup>
 		
 		<Delete Files="@(_Existing)" />
-		<Exec Command="mvn org.apache.maven.plugins:maven-dependency-plugin:3.8.1:copy-dependencies -f dep.pom -DoutputDirectory=$(IntermediateOutputPath)maven" />
-		<Touch Files="$(IntermediateOutputPath)maven\.stamp" AlwaysCreate="true" ForceTouch="true" />
+		<Exec Command="mvn org.apache.maven.plugins:maven-dependency-plugin:3.8.1:copy-dependencies -f dep.pom -DoutputDirectory=$(JavaRefPluginDirectory)" />
+		<Touch Files="$(JavaRefPluginDirectory)\.stamp" AlwaysCreate="true" ForceTouch="true" />
 		
 		<ItemGroup>
-			<FileWrites Include="$(IntermediateOutputPath)maven\**\*" />
+			<FileWrites Include="$(JavaRefPluginDirectory)\**\*" />
 		</ItemGroup>
 	</Target>
     
-    <Target Name="ConfigureJavaPlugins" BeforeTargets="CompileJava;_CompileJavaResponseFile" DependsOnTargets="DownloadMavenArtifacts">
+    <Target Name="ConfigureJavaPlugins" Condition=" '$(EnableJavaRefPlugin)' == 'true' " BeforeTargets="CompileJava;_CompileJavaResponseFile" DependsOnTargets="DownloadMavenArtifacts">
 		<ItemGroup>
 			<_Jars Remove="@(_Jars)" />
-			<_Jars Include="$(IntermediateOutputPath)maven\*.jar" />
+			<_Jars Include="$(JavaRefPluginDirectory)\*.jar" />
 			<Classpath Include="@(_Jars->'%(FullPath)')" />
 			<JavaCompilerPlugins Include="JavaRef ignorePackage=ikvm.runtime" />
 		</ItemGroup>

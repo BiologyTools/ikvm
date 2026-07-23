@@ -91,12 +91,13 @@
         <IkvmVersion>$(PackageVersion)</IkvmVersion>
         <UseIkvmTasks>false</UseIkvmTasks>
         <UseIkvmToolReferences>true</UseIkvmToolReferences>
+        <UseProjectJavaCompiler Condition=" '$(UseProjectJavaCompiler)' == '' ">false</UseProjectJavaCompiler>
         <DisableImplicitIkvmPackageReference>true</DisableImplicitIkvmPackageReference>
         <DisableImplicitIkvmMSBuildPackageReference>true</DisableImplicitIkvmMSBuildPackageReference>
     </PropertyGroup>
 
     <ItemGroup>
-        <IkvmToolReference Include="$(MSBuildThisFileDirectory)src\javac-ref\javac-ref.ikvmproj" IsJavaCompiler="true" TargetFramework="net8.0" />
+        <IkvmToolReference Include="$(MSBuildThisFileDirectory)src\javac-ref\javac-ref.ikvmproj" IsJavaCompiler="true" TargetFramework="net8.0" Condition=" '$(UseProjectJavaCompiler)' == 'true' " />
         <IkvmToolReference Include="$(MSBuildThisFileDirectory)src\ikvmc\ikvmc.csproj" IsIkvmCompiler="true" />
         <IkvmToolReference Include="$(MSBuildThisFileDirectory)src\ikvmstub\ikvmstub.csproj" IsIkvmExporter="true" />
     </ItemGroup>
