@@ -57,12 +57,12 @@
 
     <!-- Resolve JavaCompiler from project marked with IsJavaCompiler. -->
     <Target Name="ResolveJavaCompiler" DependsOnTargets="$(ResolveJavaCompilerDependsOn)">
-        <MSBuild Projects="@(_IkvmToolReference)" Targets="GetPublishProjectPath" BuildInParallel="$(BuildInParallel)" Properties="%(_IkvmToolReference.SetConfiguration);%(_IkvmToolReference.SetPlatform);%(_IkvmToolReference.SetTargetFramework);%(_IkvmToolReference.SetRuntimeIdentifier)" RemoveProperties="%(_IkvmToolReference.GlobalPropertiesToRemove);$(_GlobalPropertiesToRemoveFromProjectReferences);PublishDir;PublishUrl;Location;DesignTimeBuild;BuildProjectReferences" Condition=" '%(_IkvmToolReference.IsJavaCompiler)' == 'true' ">
-            <Output TaskParameter="TargetOutputs" PropertyName="_JavaCompilerPublishDir" />
+        <MSBuild Projects="@(_IkvmToolReference)" Targets="GetBuildProjectPath" BuildInParallel="$(BuildInParallel)" Properties="%(_IkvmToolReference.SetConfiguration);%(_IkvmToolReference.SetPlatform);%(_IkvmToolReference.SetTargetFramework);%(_IkvmToolReference.SetRuntimeIdentifier)" RemoveProperties="%(_IkvmToolReference.GlobalPropertiesToRemove);$(_GlobalPropertiesToRemoveFromProjectReferences);PublishDir;PublishUrl;Location;DesignTimeBuild;BuildProjectReferences" Condition=" '%(_IkvmToolReference.IsJavaCompiler)' == 'true' ">
+            <Output TaskParameter="TargetOutputs" PropertyName="_JavaCompilerProjectDir" />
         </MSBuild>
         <PropertyGroup>
-            <JavaCompilerPath Condition=" $([MSBuild]::IsOSUnixLike()) And '$(JavaCompilerPath)' == '' And Exists('$(_JavaCompilerPublishDir)javac') ">$([System.IO.Path]::GetFullPath('$(_JavaCompilerPublishDir)\javac'))</JavaCompilerPath>
-            <JavaCompilerPath Condition=" '$(JavaCompilerPath)' == '' And Exists('$(_JavaCompilerPublishDir)javac.exe') ">$([System.IO.Path]::GetFullPath('$(_JavaCompilerPublishDir)\javac.exe'))</JavaCompilerPath>
+            <JavaCompilerPath Condition=" $([MSBuild]::IsOSUnixLike()) And '$(JavaCompilerPath)' == '' And Exists('$(_JavaCompilerProjectDir)javac') ">$([System.IO.Path]::GetFullPath('$(_JavaCompilerProjectDir)\javac'))</JavaCompilerPath>
+            <JavaCompilerPath Condition=" '$(JavaCompilerPath)' == '' And Exists('$(_JavaCompilerProjectDir)javac.exe') ">$([System.IO.Path]::GetFullPath('$(_JavaCompilerProjectDir)\javac.exe'))</JavaCompilerPath>
             <JavaCompilerExec Condition=" '$(JavaCompilerExec)' == '' And $([MSBuild]::IsOSUnixLike()) And '$([System.IO.Path]::GetExtension($(JavaCompilerPath)))' == '.exe' ">mono $(JavaCompilerPath)</JavaCompilerExec>
             <JavaCompilerExec Condition=" '$(JavaCompilerExec)' == '' ">$(JavaCompilerPath)</JavaCompilerExec>
         </PropertyGroup>
@@ -80,12 +80,12 @@
 
     <!-- Resolve IkvmCompiler from project marked with IsIkvmCompiler. -->
     <Target Name="ResolveIkvmCompiler" DependsOnTargets="$(ResolveIkvmCompilerDependsOn)">
-        <MSBuild Projects="@(_IkvmToolReference)" Targets="GetPublishProjectPath" BuildInParallel="$(BuildInParallel)" Properties="%(_IkvmToolReference.SetConfiguration);%(_IkvmToolReference.SetPlatform);%(_IkvmToolReference.SetTargetFramework);%(_IkvmToolReference.SetRuntimeIdentifier)" RemoveProperties="%(_IkvmToolReference.GlobalPropertiesToRemove);$(_GlobalPropertiesToRemoveFromProjectReferences);PublishDir;PublishUrl;Location;DesignTimeBuild;BuildProjectReferences" Condition=" '%(_IkvmToolReference.IsIkvmCompiler)' == 'true' ">
-            <Output TaskParameter="TargetOutputs" PropertyName="_IkvmCompilerPublishDir" />
+        <MSBuild Projects="@(_IkvmToolReference)" Targets="GetBuildProjectPath" BuildInParallel="$(BuildInParallel)" Properties="%(_IkvmToolReference.SetConfiguration);%(_IkvmToolReference.SetPlatform);%(_IkvmToolReference.SetTargetFramework);%(_IkvmToolReference.SetRuntimeIdentifier)" RemoveProperties="%(_IkvmToolReference.GlobalPropertiesToRemove);$(_GlobalPropertiesToRemoveFromProjectReferences);PublishDir;PublishUrl;Location;DesignTimeBuild;BuildProjectReferences" Condition=" '%(_IkvmToolReference.IsIkvmCompiler)' == 'true' ">
+            <Output TaskParameter="TargetOutputs" PropertyName="_IkvmCompilerProjectDir" />
         </MSBuild>
         <PropertyGroup>
-            <IkvmCompilerPath Condition=" $([MSBuild]::IsOSUnixLike()) And '$(IkvmCompilerPath)' == '' And Exists('$(_IkvmCompilerPublishDir)\ikvmc') ">$([System.IO.Path]::GetFullPath('$(_IkvmCompilerPublishDir)\ikvmc'))</IkvmCompilerPath>
-            <IkvmCompilerPath Condition=" '$(IkvmCompilerPath)' == '' And Exists('$(_IkvmCompilerPublishDir)\ikvmc.exe') ">$([System.IO.Path]::GetFullPath('$(_IkvmCompilerPublishDir)\ikvmc.exe'))</IkvmCompilerPath>
+            <IkvmCompilerPath Condition=" $([MSBuild]::IsOSUnixLike()) And '$(IkvmCompilerPath)' == '' And Exists('$(_IkvmCompilerProjectDir)\ikvmc') ">$([System.IO.Path]::GetFullPath('$(_IkvmCompilerProjectDir)\ikvmc'))</IkvmCompilerPath>
+            <IkvmCompilerPath Condition=" '$(IkvmCompilerPath)' == '' And Exists('$(_IkvmCompilerProjectDir)\ikvmc.exe') ">$([System.IO.Path]::GetFullPath('$(_IkvmCompilerProjectDir)\ikvmc.exe'))</IkvmCompilerPath>
             <IkvmCompilerExec Condition=" '$(IkvmCompilerExec)' == '' And $([MSBuild]::IsOSUnixLike()) And '$([System.IO.Path]::GetExtension($(IkvmCompilerPath)))' == '.exe' ">mono $(IkvmCompilerPath)</IkvmCompilerExec>
             <IkvmCompilerExec Condition=" '$(IkvmCompilerExec)' == '' ">$(IkvmCompilerPath)</IkvmCompilerExec>
         </PropertyGroup>
@@ -103,12 +103,12 @@
 
     <!-- Resolve IkvmExporter from project marked with IsIkvmExporter. -->
     <Target Name="ResolveIkvmExporter" DependsOnTargets="$(ResolveIkvmExporterDependsOn)">
-        <MSBuild Projects="@(_IkvmToolReference)" Targets="GetPublishProjectPath" BuildInParallel="$(BuildInParallel)" Properties="%(_IkvmToolReference.SetConfiguration);%(_IkvmToolReference.SetPlatform);%(_IkvmToolReference.SetTargetFramework);%(_IkvmToolReference.SetRuntimeIdentifier)" RemoveProperties="%(_IkvmToolReference.GlobalPropertiesToRemove);$(_GlobalPropertiesToRemoveFromProjectReferences);PublishDir;PublishUrl;Location;DesignTimeBuild;BuildProjectReferences" Condition=" '%(_IkvmToolReference.IsIkvmExporter)' == 'true' ">
-            <Output TaskParameter="TargetOutputs" PropertyName="_IkvmExporterPublishDir" />
+        <MSBuild Projects="@(_IkvmToolReference)" Targets="GetBuildProjectPath" BuildInParallel="$(BuildInParallel)" Properties="%(_IkvmToolReference.SetConfiguration);%(_IkvmToolReference.SetPlatform);%(_IkvmToolReference.SetTargetFramework);%(_IkvmToolReference.SetRuntimeIdentifier)" RemoveProperties="%(_IkvmToolReference.GlobalPropertiesToRemove);$(_GlobalPropertiesToRemoveFromProjectReferences);PublishDir;PublishUrl;Location;DesignTimeBuild;BuildProjectReferences" Condition=" '%(_IkvmToolReference.IsIkvmExporter)' == 'true' ">
+            <Output TaskParameter="TargetOutputs" PropertyName="_IkvmExporterProjectDir" />
         </MSBuild>
         <PropertyGroup>
-            <IkvmExporterPath Condition=" $([MSBuild]::IsOSUnixLike()) And '$(IkvmExporterPath)' == '' And Exists('$(_IkvmExporterPublishDir)ikvmstub')">$([System.IO.Path]::GetFullPath('$(_IkvmExporterPublishDir)ikvmstub'))</IkvmExporterPath>
-            <IkvmExporterPath Condition=" '$(IkvmExporterPath)' == '' And Exists('$(_IkvmExporterPublishDir)ikvmstub.exe')">$([System.IO.Path]::GetFullPath('$(_IkvmExporterPublishDir)ikvmstub.exe'))</IkvmExporterPath>
+            <IkvmExporterPath Condition=" $([MSBuild]::IsOSUnixLike()) And '$(IkvmExporterPath)' == '' And Exists('$(_IkvmExporterProjectDir)ikvmstub')">$([System.IO.Path]::GetFullPath('$(_IkvmExporterProjectDir)ikvmstub'))</IkvmExporterPath>
+            <IkvmExporterPath Condition=" '$(IkvmExporterPath)' == '' And Exists('$(_IkvmExporterProjectDir)ikvmstub.exe')">$([System.IO.Path]::GetFullPath('$(_IkvmExporterProjectDir)ikvmstub.exe'))</IkvmExporterPath>
             <IkvmExporterExec Condition=" '$(IkvmExporterExec)' == '' And $([MSBuild]::IsOSUnixLike()) And '$([System.IO.Path]::GetExtension($(IkvmExporterPath)))' == '.exe' ">mono $(IkvmExporterPath)</IkvmExporterExec>
             <IkvmExporterExec Condition=" '$(IkvmExporterExec)' == '' ">$(IkvmExporterPath)</IkvmExporterExec>
         </PropertyGroup>

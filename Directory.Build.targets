@@ -7,7 +7,17 @@
         <RuntimeIdentifier Condition=" '$(RuntimeIdentifier)' == 'win7-x64' ">win-x64</RuntimeIdentifier>
         <Prefer32Bit Condition=" '$(RuntimeIdentifier)' == 'win-x86' And $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net461'))">true</Prefer32Bit>
         <IkvmDepsFileExtensionsRetryDelayMilliseconds Condition=" '$(IkvmDepsFileExtensionsRetryDelayMilliseconds)' == '' ">500</IkvmDepsFileExtensionsRetryDelayMilliseconds>
+        <GetBuildProjectPathDependsOn>
+            $(GetBuildProjectPathDependsOn);
+            Build;
+        </GetBuildProjectPathDependsOn>
     </PropertyGroup>
+
+    <Target Name="GetBuildProjectPath" DependsOnTargets="$(GetBuildProjectPathDependsOn)" Returns="$(GetBuildProjectPath)">
+        <PropertyGroup>
+            <GetBuildProjectPath>$([System.IO.Path]::GetFullPath('$(TargetDir)'))</GetBuildProjectPath>
+        </PropertyGroup>
+    </Target>
 
     <Target Name="GenerateBuildDependencyFileExtensions" AfterTargets="GenerateBuildDependencyFile" Condition=" '$(GenerateDependencyFile)' == 'true' And '$(ProjectDepsFilePath)' != '' ">
         <GenerateDepsFileExtensions DepsFilePath="$(ProjectDepsFilePath)" AdditionalRuntimeLibraryAssets="@(AdditionalRuntimeLibraryAssets)" AdditionalRuntimeNativeAssets="@(AdditionalRuntimeNativeAssets)" ContinueOnError="WarnAndContinue" />
