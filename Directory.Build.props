@@ -1,14 +1,57 @@
 <Project>
-    <PropertyGroup Label="Runtime Info">
-        <SupportedRuntimes>win-x64;win-x86;win-arm64;linux-x64;linux-arm;linux-arm64;linux-musl-x64;linux-musl-arm;linux-musl-arm64;osx-x64;osx-arm64</SupportedRuntimes>
-        <EnabledRuntimes Condition=" '$(EnabledRuntimes)' == '' ">$(SupportedRuntimes)</EnabledRuntimes>
-        <SupportedImageRuntimes>win-x64;win-x86;win-arm64;linux-x64;linux-arm;linux-arm64;linux-musl-x64;linux-musl-arm;linux-musl-arm64;osx-x64;osx-arm64</SupportedImageRuntimes>
-        <EnabledImageRuntimes Condition=" '$(EnabledImageRuntimes)' == '' ">$(SupportedImageRuntimes)</EnabledImageRuntimes>
-        <SupportedImageBinRuntimes>win-x64;win-x86;win-arm64;linux-x64;linux-arm;linux-arm64;linux-musl-x64;linux-musl-arm;linux-musl-arm64;osx-x64;osx-arm64</SupportedImageBinRuntimes>
-        <EnabledImageBinRuntimes Condition=" '$(EnabledImageBinRuntimes)' == '' ">$(SupportedImageBinRuntimes)</EnabledImageBinRuntimes>
-        <SupportedToolRuntimes>win-x64;win-arm64;linux-x64;linux-arm;linux-arm64;linux-musl-x64;linux-musl-arm;linux-musl-arm64;osx-x64;osx-arm64</SupportedToolRuntimes>
-        <EnabledToolRuntimes Condition=" '$(EnabledToolRuntimes)' == '' ">$(SupportedToolRuntimes)</EnabledToolRuntimes>
+    <PropertyGroup Label="Build Profile">
+        <IkvmDefaultSupportedRuntimes>win-x64;win-x86;win-arm64;linux-x64;linux-arm;linux-arm64;linux-musl-x64;linux-musl-arm;linux-musl-arm64;osx-x64;osx-arm64</IkvmDefaultSupportedRuntimes>
+        <IkvmDefaultSupportedImageRuntimes>$(IkvmDefaultSupportedRuntimes)</IkvmDefaultSupportedImageRuntimes>
+        <IkvmDefaultSupportedImageBinRuntimes>$(IkvmDefaultSupportedRuntimes)</IkvmDefaultSupportedImageBinRuntimes>
+        <IkvmDefaultSupportedToolRuntimes>win-x64;win-arm64;linux-x64;linux-arm;linux-arm64;linux-musl-x64;linux-musl-arm;linux-musl-arm64;osx-x64;osx-arm64</IkvmDefaultSupportedToolRuntimes>
+        <IkvmRunningInCi Condition=" '$(IkvmRunningInCi)' == '' And ('$(ContinuousIntegrationBuild)' == 'true' Or '$(CI)' == 'true' Or '$(TF_BUILD)' == 'True' Or '$(GITHUB_ACTIONS)' == 'true') ">true</IkvmRunningInCi>
+        <IkvmRunningInCi Condition=" '$(IkvmRunningInCi)' == '' ">false</IkvmRunningInCi>
+        <IkvmBuildForPackaging Condition=" '$(IkvmBuildForPackaging)' == '' And ('$(Pack)' == 'true' Or '$(PackIkvmJava)' == 'true' Or '$(PackIkvmLibs)' == 'true') ">true</IkvmBuildForPackaging>
+        <IkvmBuildForPackaging Condition=" '$(IkvmBuildForPackaging)' == '' ">false</IkvmBuildForPackaging>
+        <IkvmFastLocalBuild Condition=" '$(IkvmFastLocalBuild)' == '' And '$(IkvmRunningInCi)' != 'true' And '$(IkvmBuildForPackaging)' != 'true' ">true</IkvmFastLocalBuild>
+        <IkvmFastLocalBuild Condition=" '$(IkvmFastLocalBuild)' == '' ">false</IkvmFastLocalBuild>
+        <IkvmHostRuntimeIdentifier Condition="$([MSBuild]::IsOSPlatform('Windows')) And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64'">win-x64</IkvmHostRuntimeIdentifier>
+        <IkvmHostRuntimeIdentifier Condition="$([MSBuild]::IsOSPlatform('Windows')) And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X86'">win-x86</IkvmHostRuntimeIdentifier>
+        <IkvmHostRuntimeIdentifier Condition="$([MSBuild]::IsOSPlatform('Windows')) And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'ARM64'">win-arm64</IkvmHostRuntimeIdentifier>
+        <IkvmHostRuntimeIdentifier Condition="$([MSBuild]::IsOSPlatform('Linux')) And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64'">linux-x64</IkvmHostRuntimeIdentifier>
+        <IkvmHostRuntimeIdentifier Condition="$([MSBuild]::IsOSPlatform('Linux')) And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'ARM'">linux-arm</IkvmHostRuntimeIdentifier>
+        <IkvmHostRuntimeIdentifier Condition="$([MSBuild]::IsOSPlatform('Linux')) And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'ARM64'">linux-arm64</IkvmHostRuntimeIdentifier>
+        <IkvmHostRuntimeIdentifier Condition="$([MSBuild]::IsOSPlatform('OSX')) And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64'">osx-x64</IkvmHostRuntimeIdentifier>
+        <IkvmHostRuntimeIdentifier Condition="$([MSBuild]::IsOSPlatform('OSX')) And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'ARM64'">osx-arm64</IkvmHostRuntimeIdentifier>
+        <IkvmLocalRuntimes Condition=" '$(IkvmLocalRuntimes)' == '' ">$(IkvmHostRuntimeIdentifier)</IkvmLocalRuntimes>
+        <IkvmBuildJavaWindowsRuntime Condition=" '$(IkvmBuildJavaWindowsRuntime)' == '' And '$(IkvmBuildForPackaging)' == 'true' ">true</IkvmBuildJavaWindowsRuntime>
+        <IkvmBuildJavaWindowsRuntime Condition=" '$(IkvmBuildJavaWindowsRuntime)' == '' And '$(IkvmFastLocalBuild)' == 'true' And $([MSBuild]::IsOSPlatform('Windows')) ">true</IkvmBuildJavaWindowsRuntime>
+        <IkvmBuildJavaWindowsRuntime Condition=" '$(IkvmBuildJavaWindowsRuntime)' == '' ">false</IkvmBuildJavaWindowsRuntime>
+        <IkvmBuildJavaLinuxRuntime Condition=" '$(IkvmBuildJavaLinuxRuntime)' == '' And '$(IkvmBuildForPackaging)' == 'true' ">true</IkvmBuildJavaLinuxRuntime>
+        <IkvmBuildJavaLinuxRuntime Condition=" '$(IkvmBuildJavaLinuxRuntime)' == '' And '$(IkvmFastLocalBuild)' == 'true' And $([MSBuild]::IsOSPlatform('Linux')) ">true</IkvmBuildJavaLinuxRuntime>
+        <IkvmBuildJavaLinuxRuntime Condition=" '$(IkvmBuildJavaLinuxRuntime)' == '' ">false</IkvmBuildJavaLinuxRuntime>
+        <IkvmBuildJavaOsxRuntime Condition=" '$(IkvmBuildJavaOsxRuntime)' == '' And '$(IkvmBuildForPackaging)' == 'true' ">true</IkvmBuildJavaOsxRuntime>
+        <IkvmBuildJavaOsxRuntime Condition=" '$(IkvmBuildJavaOsxRuntime)' == '' And '$(IkvmFastLocalBuild)' == 'true' And $([MSBuild]::IsOSPlatform('OSX')) ">true</IkvmBuildJavaOsxRuntime>
+        <IkvmBuildJavaOsxRuntime Condition=" '$(IkvmBuildJavaOsxRuntime)' == '' ">false</IkvmBuildJavaOsxRuntime>
+    </PropertyGroup>
 
+    <PropertyGroup Label="Runtime Info">
+        <SupportedRuntimes Condition=" '$(SupportedRuntimes)' == '' ">$(IkvmDefaultSupportedRuntimes)</SupportedRuntimes>
+        <EnabledRuntimes Condition=" '$(EnabledRuntimes)' == '' ">$(SupportedRuntimes)</EnabledRuntimes>
+        <SupportedImageRuntimes Condition=" '$(SupportedImageRuntimes)' == '' ">$(IkvmDefaultSupportedImageRuntimes)</SupportedImageRuntimes>
+        <EnabledImageRuntimes Condition=" '$(EnabledImageRuntimes)' == '' ">$(SupportedImageRuntimes)</EnabledImageRuntimes>
+        <SupportedImageBinRuntimes Condition=" '$(SupportedImageBinRuntimes)' == '' ">$(IkvmDefaultSupportedImageBinRuntimes)</SupportedImageBinRuntimes>
+        <EnabledImageBinRuntimes Condition=" '$(EnabledImageBinRuntimes)' == '' ">$(SupportedImageBinRuntimes)</EnabledImageBinRuntimes>
+        <SupportedToolRuntimes Condition=" '$(SupportedToolRuntimes)' == '' ">$(IkvmDefaultSupportedToolRuntimes)</SupportedToolRuntimes>
+        <EnabledToolRuntimes Condition=" '$(EnabledToolRuntimes)' == '' ">$(SupportedToolRuntimes)</EnabledToolRuntimes>
+    </PropertyGroup>
+
+    <PropertyGroup Label="Fast Local Runtime Narrowing" Condition=" '$(IkvmFastLocalBuild)' == 'true' And '$(IkvmLocalRuntimes)' != '' ">
+        <EnabledRuntimes Condition=" '$(EnabledRuntimes)' == '$(IkvmDefaultSupportedRuntimes)' ">$(IkvmLocalRuntimes)</EnabledRuntimes>
+        <SupportedImageRuntimes Condition=" '$(SupportedImageRuntimes)' == '$(IkvmDefaultSupportedImageRuntimes)' ">$(IkvmLocalRuntimes)</SupportedImageRuntimes>
+        <EnabledImageRuntimes Condition=" '$(EnabledImageRuntimes)' == '$(IkvmDefaultSupportedImageRuntimes)' ">$(IkvmLocalRuntimes)</EnabledImageRuntimes>
+        <SupportedImageBinRuntimes Condition=" '$(SupportedImageBinRuntimes)' == '$(IkvmDefaultSupportedImageBinRuntimes)' ">$(IkvmLocalRuntimes)</SupportedImageBinRuntimes>
+        <EnabledImageBinRuntimes Condition=" '$(EnabledImageBinRuntimes)' == '$(IkvmDefaultSupportedImageBinRuntimes)' ">$(IkvmLocalRuntimes)</EnabledImageBinRuntimes>
+        <SupportedToolRuntimes Condition=" '$(SupportedToolRuntimes)' == '$(IkvmDefaultSupportedToolRuntimes)' ">$(IkvmLocalRuntimes)</SupportedToolRuntimes>
+        <EnabledToolRuntimes Condition=" '$(EnabledToolRuntimes)' == '$(IkvmDefaultSupportedToolRuntimes)' ">$(IkvmLocalRuntimes)</EnabledToolRuntimes>
+    </PropertyGroup>
+
+    <PropertyGroup Label="Runtime Markers">
         <_SupportedRuntimes>;$(SupportedRuntimes);</_SupportedRuntimes>
         <_EnabledRuntimes>;$(EnabledRuntimes);</_EnabledRuntimes>
         <_SupportedImageRuntimes>;$(SupportedImageRuntimes);</_SupportedImageRuntimes>
@@ -89,7 +132,7 @@
         <IkvmExportCacheDir>$(MSBuildThisFileDirectory).ikvm\expcache\1\</IkvmExportCacheDir>
         <IkvmKeyFile>$(AssemblyOriginatorKeyFile)</IkvmKeyFile>
         <IkvmVersion>$(PackageVersion)</IkvmVersion>
-        <UseIkvmTasks>false</UseIkvmTasks>
+        <UseIkvmTasks Condition=" '$(UseIkvmTasks)' == '' ">false</UseIkvmTasks>
         <UseIkvmToolReferences>true</UseIkvmToolReferences>
         <UseProjectJavaCompiler Condition=" '$(UseProjectJavaCompiler)' == '' ">false</UseProjectJavaCompiler>
         <DisableImplicitIkvmPackageReference>true</DisableImplicitIkvmPackageReference>

@@ -61,8 +61,13 @@
             <Output TaskParameter="TargetOutputs" PropertyName="_JavaCompilerProjectDir" />
         </MSBuild>
         <PropertyGroup>
-            <JavaCompilerPath Condition=" $([MSBuild]::IsOSUnixLike()) And '$(JavaCompilerPath)' == '' And Exists('$(_JavaCompilerProjectDir)javac') ">$([System.IO.Path]::GetFullPath('$(_JavaCompilerProjectDir)\javac'))</JavaCompilerPath>
-            <JavaCompilerPath Condition=" '$(JavaCompilerPath)' == '' And Exists('$(_JavaCompilerProjectDir)javac.exe') ">$([System.IO.Path]::GetFullPath('$(_JavaCompilerProjectDir)\javac.exe'))</JavaCompilerPath>
+            <_JavaCompilerPathCandidate Condition=" $([MSBuild]::IsOSUnixLike()) And '$(_JavaCompilerProjectDir)' != '' ">$([System.IO.Path]::GetFullPath('$(_JavaCompilerProjectDir)\javac'))</_JavaCompilerPathCandidate>
+            <_JavaCompilerPathCandidate Condition=" '$(_JavaCompilerProjectDir)' != '' ">$([System.IO.Path]::GetFullPath('$(_JavaCompilerProjectDir)\javac.exe'))</_JavaCompilerPathCandidate>
+        </PropertyGroup>
+        <Message Text="Building local javac-ref tool project because '$(_JavaCompilerPathCandidate)' does not exist." Importance="high" Condition=" '$(JavaCompilerPath)' == '' And '$(_JavaCompilerProjectDir)' != '' And '$(_JavaCompilerPathCandidate)' != '' And !Exists('$(_JavaCompilerPathCandidate)') " />
+        <MSBuild Projects="@(_IkvmToolReference)" Targets="Build" BuildInParallel="$(BuildInParallel)" Properties="%(_IkvmToolReference.SetConfiguration);%(_IkvmToolReference.SetPlatform);%(_IkvmToolReference.SetTargetFramework);%(_IkvmToolReference.SetRuntimeIdentifier)" RemoveProperties="%(_IkvmToolReference.GlobalPropertiesToRemove);$(_GlobalPropertiesToRemoveFromProjectReferences);PublishDir;PublishUrl;Location;DesignTimeBuild;BuildProjectReferences" Condition=" '%(_IkvmToolReference.IsJavaCompiler)' == 'true' And '$(JavaCompilerPath)' == '' And '$(_JavaCompilerProjectDir)' != '' And '$(_JavaCompilerPathCandidate)' != '' And !Exists('$(_JavaCompilerPathCandidate)') " />
+        <PropertyGroup>
+            <JavaCompilerPath Condition=" '$(JavaCompilerPath)' == '' And '$(_JavaCompilerPathCandidate)' != '' And Exists('$(_JavaCompilerPathCandidate)') ">$(_JavaCompilerPathCandidate)</JavaCompilerPath>
             <JavaCompilerExec Condition=" '$(JavaCompilerExec)' == '' And $([MSBuild]::IsOSUnixLike()) And '$([System.IO.Path]::GetExtension($(JavaCompilerPath)))' == '.exe' ">mono $(JavaCompilerPath)</JavaCompilerExec>
             <JavaCompilerExec Condition=" '$(JavaCompilerExec)' == '' ">$(JavaCompilerPath)</JavaCompilerExec>
         </PropertyGroup>
@@ -84,8 +89,13 @@
             <Output TaskParameter="TargetOutputs" PropertyName="_IkvmCompilerProjectDir" />
         </MSBuild>
         <PropertyGroup>
-            <IkvmCompilerPath Condition=" $([MSBuild]::IsOSUnixLike()) And '$(IkvmCompilerPath)' == '' And Exists('$(_IkvmCompilerProjectDir)\ikvmc') ">$([System.IO.Path]::GetFullPath('$(_IkvmCompilerProjectDir)\ikvmc'))</IkvmCompilerPath>
-            <IkvmCompilerPath Condition=" '$(IkvmCompilerPath)' == '' And Exists('$(_IkvmCompilerProjectDir)\ikvmc.exe') ">$([System.IO.Path]::GetFullPath('$(_IkvmCompilerProjectDir)\ikvmc.exe'))</IkvmCompilerPath>
+            <_IkvmCompilerPathCandidate Condition=" $([MSBuild]::IsOSUnixLike()) And '$(_IkvmCompilerProjectDir)' != '' ">$([System.IO.Path]::GetFullPath('$(_IkvmCompilerProjectDir)\ikvmc'))</_IkvmCompilerPathCandidate>
+            <_IkvmCompilerPathCandidate Condition=" '$(_IkvmCompilerProjectDir)' != '' ">$([System.IO.Path]::GetFullPath('$(_IkvmCompilerProjectDir)\ikvmc.exe'))</_IkvmCompilerPathCandidate>
+        </PropertyGroup>
+        <Message Text="Building local ikvmc tool project because '$(_IkvmCompilerPathCandidate)' does not exist." Importance="high" Condition=" '$(IkvmCompilerPath)' == '' And '$(_IkvmCompilerProjectDir)' != '' And '$(_IkvmCompilerPathCandidate)' != '' And !Exists('$(_IkvmCompilerPathCandidate)') " />
+        <MSBuild Projects="@(_IkvmToolReference)" Targets="Build" BuildInParallel="$(BuildInParallel)" Properties="%(_IkvmToolReference.SetConfiguration);%(_IkvmToolReference.SetPlatform);%(_IkvmToolReference.SetTargetFramework);%(_IkvmToolReference.SetRuntimeIdentifier)" RemoveProperties="%(_IkvmToolReference.GlobalPropertiesToRemove);$(_GlobalPropertiesToRemoveFromProjectReferences);PublishDir;PublishUrl;Location;DesignTimeBuild;BuildProjectReferences" Condition=" '%(_IkvmToolReference.IsIkvmCompiler)' == 'true' And '$(IkvmCompilerPath)' == '' And '$(_IkvmCompilerProjectDir)' != '' And '$(_IkvmCompilerPathCandidate)' != '' And !Exists('$(_IkvmCompilerPathCandidate)') " />
+        <PropertyGroup>
+            <IkvmCompilerPath Condition=" '$(IkvmCompilerPath)' == '' And '$(_IkvmCompilerPathCandidate)' != '' And Exists('$(_IkvmCompilerPathCandidate)') ">$(_IkvmCompilerPathCandidate)</IkvmCompilerPath>
             <IkvmCompilerExec Condition=" '$(IkvmCompilerExec)' == '' And $([MSBuild]::IsOSUnixLike()) And '$([System.IO.Path]::GetExtension($(IkvmCompilerPath)))' == '.exe' ">mono $(IkvmCompilerPath)</IkvmCompilerExec>
             <IkvmCompilerExec Condition=" '$(IkvmCompilerExec)' == '' ">$(IkvmCompilerPath)</IkvmCompilerExec>
         </PropertyGroup>
@@ -107,8 +117,13 @@
             <Output TaskParameter="TargetOutputs" PropertyName="_IkvmExporterProjectDir" />
         </MSBuild>
         <PropertyGroup>
-            <IkvmExporterPath Condition=" $([MSBuild]::IsOSUnixLike()) And '$(IkvmExporterPath)' == '' And Exists('$(_IkvmExporterProjectDir)ikvmstub')">$([System.IO.Path]::GetFullPath('$(_IkvmExporterProjectDir)ikvmstub'))</IkvmExporterPath>
-            <IkvmExporterPath Condition=" '$(IkvmExporterPath)' == '' And Exists('$(_IkvmExporterProjectDir)ikvmstub.exe')">$([System.IO.Path]::GetFullPath('$(_IkvmExporterProjectDir)ikvmstub.exe'))</IkvmExporterPath>
+            <_IkvmExporterPathCandidate Condition=" $([MSBuild]::IsOSUnixLike()) And '$(_IkvmExporterProjectDir)' != '' ">$([System.IO.Path]::GetFullPath('$(_IkvmExporterProjectDir)\ikvmstub'))</_IkvmExporterPathCandidate>
+            <_IkvmExporterPathCandidate Condition=" '$(_IkvmExporterProjectDir)' != '' ">$([System.IO.Path]::GetFullPath('$(_IkvmExporterProjectDir)\ikvmstub.exe'))</_IkvmExporterPathCandidate>
+        </PropertyGroup>
+        <Message Text="Building local ikvmstub tool project because '$(_IkvmExporterPathCandidate)' does not exist." Importance="high" Condition=" '$(IkvmExporterPath)' == '' And '$(_IkvmExporterProjectDir)' != '' And '$(_IkvmExporterPathCandidate)' != '' And !Exists('$(_IkvmExporterPathCandidate)') " />
+        <MSBuild Projects="@(_IkvmToolReference)" Targets="Build" BuildInParallel="$(BuildInParallel)" Properties="%(_IkvmToolReference.SetConfiguration);%(_IkvmToolReference.SetPlatform);%(_IkvmToolReference.SetTargetFramework);%(_IkvmToolReference.SetRuntimeIdentifier)" RemoveProperties="%(_IkvmToolReference.GlobalPropertiesToRemove);$(_GlobalPropertiesToRemoveFromProjectReferences);PublishDir;PublishUrl;Location;DesignTimeBuild;BuildProjectReferences" Condition=" '%(_IkvmToolReference.IsIkvmExporter)' == 'true' And '$(IkvmExporterPath)' == '' And '$(_IkvmExporterProjectDir)' != '' And '$(_IkvmExporterPathCandidate)' != '' And !Exists('$(_IkvmExporterPathCandidate)') " />
+        <PropertyGroup>
+            <IkvmExporterPath Condition=" '$(IkvmExporterPath)' == '' And '$(_IkvmExporterPathCandidate)' != '' And Exists('$(_IkvmExporterPathCandidate)') ">$(_IkvmExporterPathCandidate)</IkvmExporterPath>
             <IkvmExporterExec Condition=" '$(IkvmExporterExec)' == '' And $([MSBuild]::IsOSUnixLike()) And '$([System.IO.Path]::GetExtension($(IkvmExporterPath)))' == '.exe' ">mono $(IkvmExporterPath)</IkvmExporterExec>
             <IkvmExporterExec Condition=" '$(IkvmExporterExec)' == '' ">$(IkvmExporterPath)</IkvmExporterExec>
         </PropertyGroup>

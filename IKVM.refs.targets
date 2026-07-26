@@ -25,21 +25,21 @@
             <OutputItemType>IkvmJavaItem</OutputItemType>
             <IkvmJavaRuntimeIdentifier>ref</IkvmJavaRuntimeIdentifier>
         </ProjectReference>
-        <ProjectReference Include="$(MSBuildThisFileDirectory)src\IKVM.Java.runtime.win\IKVM.Java.runtime.win.ikvmproj" Condition="$(_EnabledRuntimes.Contains(';win-'))">
+        <ProjectReference Include="$(MSBuildThisFileDirectory)src\IKVM.Java.runtime.win\IKVM.Java.runtime.win.ikvmproj" Condition="$(_EnabledRuntimes.Contains(';win-')) And '$(IkvmBuildJavaWindowsRuntime)' == 'true'">
             <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
             <Private>False</Private>
             <PrivateAssets>all</PrivateAssets>
             <OutputItemType>IkvmJavaItem</OutputItemType>
             <IkvmJavaRuntimeIdentifier>win</IkvmJavaRuntimeIdentifier>
         </ProjectReference>
-        <ProjectReference Include="$(MSBuildThisFileDirectory)src\IKVM.Java.runtime.linux\IKVM.Java.runtime.linux.ikvmproj" Condition="$(_EnabledRuntimes.Contains(';linux-')) And $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1'))">
+        <ProjectReference Include="$(MSBuildThisFileDirectory)src\IKVM.Java.runtime.linux\IKVM.Java.runtime.linux.ikvmproj" Condition="$(_EnabledRuntimes.Contains(';linux-')) And $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1')) And '$(IkvmBuildJavaLinuxRuntime)' == 'true'">
             <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
             <Private>False</Private>
             <PrivateAssets>all</PrivateAssets>
             <OutputItemType>IkvmJavaItem</OutputItemType>
             <IkvmJavaRuntimeIdentifier>linux</IkvmJavaRuntimeIdentifier>
         </ProjectReference>
-        <ProjectReference Include="$(MSBuildThisFileDirectory)src\IKVM.Java.runtime.osx\IKVM.Java.runtime.osx.ikvmproj" Condition="$(_EnabledRuntimes.Contains(';osx-')) And $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1'))">
+        <ProjectReference Include="$(MSBuildThisFileDirectory)src\IKVM.Java.runtime.osx\IKVM.Java.runtime.osx.ikvmproj" Condition="$(_EnabledRuntimes.Contains(';osx-')) And $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1')) And '$(IkvmBuildJavaOsxRuntime)' == 'true'">
             <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
             <Private>False</Private>
             <PrivateAssets>all</PrivateAssets>

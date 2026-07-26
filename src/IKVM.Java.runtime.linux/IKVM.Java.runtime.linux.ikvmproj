@@ -21,4 +21,10 @@
     <Import Project="..\IKVM.Java\IKVM.Java.runtime.props" />
     <Import Project="$(MSBuildThisFileDirectory)..\IKVM.NET.Sdk\Sdk\Sdk.targets" />
     <Import Project="..\IKVM.Java\IKVM.Java.runtime.targets" />
+
+    <Target Name="Build" Condition=" '$(IkvmBuildJavaLinuxRuntime)' != 'true' ">
+        <Message Text="Skipping IKVM.Java.runtime.linux because IkvmBuildJavaLinuxRuntime=$(IkvmBuildJavaLinuxRuntime)." Importance="high" />
+    </Target>
+
+    <Target Name="Rebuild" Condition=" '$(IkvmBuildJavaLinuxRuntime)' != 'true' " DependsOnTargets="Build" />
 </Project>

@@ -9,7 +9,7 @@
         <IkvmDepsFileExtensionsRetryDelayMilliseconds Condition=" '$(IkvmDepsFileExtensionsRetryDelayMilliseconds)' == '' ">500</IkvmDepsFileExtensionsRetryDelayMilliseconds>
         <GetBuildProjectPathDependsOn>
             $(GetBuildProjectPathDependsOn);
-            Build;
+            GetTargetPath;
         </GetBuildProjectPathDependsOn>
     </PropertyGroup>
 

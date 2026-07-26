@@ -3,6 +3,7 @@
 using java.nio;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
 
 namespace IKVM.Tests.Java.java.nio
 {
@@ -10,6 +11,14 @@ namespace IKVM.Tests.Java.java.nio
     [TestClass]
     public class ByteBufferTests
     {
+        static bool HasMethod(global::java.lang.Class type, string name, global::java.lang.Class returnType, params global::java.lang.Class[] parameterTypes)
+        {
+            return type.getDeclaredMethods().Cast<global::java.lang.reflect.Method>().Any(m =>
+                m.getName() == name &&
+                m.getReturnType() == returnType &&
+                m.getParameterTypes().SequenceEqual(parameterTypes));
+        }
+
 
         /// <summary>
         /// Predictably hashes the given integer.
@@ -88,6 +97,50 @@ namespace IKVM.Tests.Java.java.nio
             b.get(a);
             for (int i = 0; i < a.Length; i++)
                 a[i].Should().Be(b.get(i));
+        }
+
+        [TestMethod]
+        public void ByteBufferDeclaresCovariantFluentMethods()
+        {
+            var type = (global::java.lang.Class)typeof(ByteBuffer);
+            var bufferType = (global::java.lang.Class)typeof(Buffer);
+
+            HasMethod(type, "position", type, typeof(int)).Should().BeTrue();
+            HasMethod(type, "position", bufferType, typeof(int)).Should().BeTrue();
+            HasMethod(type, "limit", type, typeof(int)).Should().BeTrue();
+            HasMethod(type, "limit", bufferType, typeof(int)).Should().BeTrue();
+            HasMethod(type, "mark", type).Should().BeTrue();
+            HasMethod(type, "mark", bufferType).Should().BeTrue();
+            HasMethod(type, "reset", type).Should().BeTrue();
+            HasMethod(type, "reset", bufferType).Should().BeTrue();
+            HasMethod(type, "clear", type).Should().BeTrue();
+            HasMethod(type, "clear", bufferType).Should().BeTrue();
+            HasMethod(type, "flip", type).Should().BeTrue();
+            HasMethod(type, "flip", bufferType).Should().BeTrue();
+            HasMethod(type, "rewind", type).Should().BeTrue();
+            HasMethod(type, "rewind", bufferType).Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void MappedByteBufferDeclaresCovariantFluentMethods()
+        {
+            var type = (global::java.lang.Class)typeof(MappedByteBuffer);
+            var byteBufferType = (global::java.lang.Class)typeof(ByteBuffer);
+
+            HasMethod(type, "position", type, typeof(int)).Should().BeTrue();
+            HasMethod(type, "position", byteBufferType, typeof(int)).Should().BeTrue();
+            HasMethod(type, "limit", type, typeof(int)).Should().BeTrue();
+            HasMethod(type, "limit", byteBufferType, typeof(int)).Should().BeTrue();
+            HasMethod(type, "mark", type).Should().BeTrue();
+            HasMethod(type, "mark", byteBufferType).Should().BeTrue();
+            HasMethod(type, "reset", type).Should().BeTrue();
+            HasMethod(type, "reset", byteBufferType).Should().BeTrue();
+            HasMethod(type, "clear", type).Should().BeTrue();
+            HasMethod(type, "clear", byteBufferType).Should().BeTrue();
+            HasMethod(type, "flip", type).Should().BeTrue();
+            HasMethod(type, "flip", byteBufferType).Should().BeTrue();
+            HasMethod(type, "rewind", type).Should().BeTrue();
+            HasMethod(type, "rewind", byteBufferType).Should().BeTrue();
         }
 
     }
