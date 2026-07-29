@@ -11,9 +11,6 @@
         <TargetsTriggeredByCompilation>$(TargetsTriggeredByCompilation);ConvertRefAssembly</TargetsTriggeredByCompilation>
         <EnableJavaRefPlugin Condition=" '$(EnableJavaRefPlugin)' == '' ">false</EnableJavaRefPlugin>
         <JavaRefPluginDirectory Condition=" '$(JavaRefPluginDirectory)' == '' ">$(IntermediateOutputPath)maven</JavaRefPluginDirectory>
-        <IntermediateOutputPath Condition=" '$(IkvmJavaRuntimeIdentifier)' != '' And '$(IkvmJavaRuntimeIdentifier)' != 'ref' And '$(TargetFramework)' != '' ">obj\$(Configuration)\$(TargetFramework)\$(IkvmJavaRuntimeIdentifier)\</IntermediateOutputPath>
-        <OutputPath Condition=" '$(IkvmJavaRuntimeIdentifier)' != '' And '$(IkvmJavaRuntimeIdentifier)' != 'ref' And '$(TargetFramework)' != '' ">bin\$(Configuration)\$(TargetFramework)\$(IkvmJavaRuntimeIdentifier)\</OutputPath>
-        <IntermediateOutputPath Condition=" '$(RuntimeIdentifier)' != '' And '$(TargetFramework)' != '' ">obj\$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\</IntermediateOutputPath>
     </PropertyGroup>
 
     <ItemGroup>

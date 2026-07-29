@@ -13,7 +13,7 @@
         </ResolveIkvmFrameworkReferencesDependsOn>
     </PropertyGroup>
 
-    <Target Name="ResolveIkvmFrameworkReferences" DependsOnTargets="$(ResolveIkvmFrameworkReferencesDependsOn);$(ResolveAssemblyReferencesDependsOn)">
+    <Target Name="ResolveIkvmFrameworkReferences" DependsOnTargets="$(ResolveIkvmFrameworkReferencesDependsOn);$(ResolveAssemblyReferencesDependsOn)" Condition=" '$(TargetFramework)' != '' ">
         <ItemGroup>
             <_IkvmFrameworkAssemblyReference Include="@(Reference)" Condition=" '%(Reference.NuGetIsFrameworkReference)' == 'true' Or '%(Reference.FrameworkFile)' == 'true' Or '%(Reference.ResolvedFrom)' == '{TargetFrameworkDirectory}' Or '%(Reference.IsImplicitlyDefined)' == 'true' Or '%(Reference.FrameworkReferenceName)' != '' Or '%(Reference.FrameworkReferenceVersion)' != '' Or '%(Reference.Identity)' == 'mscorlib' Or '%(Reference.Identity)' == 'System' Or $([System.String]::new('%(Reference.Identity)').StartsWith('System.')) "/>
             <_IkvmFrameworkAssemblyReference Include="@(Reference)" Condition=" '%(Reference.Identity)' == 'IKVM.Runtime' Or '%(Reference.Filename)%(Reference.Extension)' == 'IKVM.Runtime.dll' " />
@@ -77,7 +77,7 @@
     </Target>
 
     <!-- Transforms the IkvmReference item group into IkvmReferenceItem items. -->
-    <Target Name="GetIkvmReferenceItemsFromIkvmReferences">
+    <Target Name="GetIkvmReferenceItemsFromIkvmReferences" Condition=" '$(TargetFramework)' != '' ">
         <ItemGroup>
             <IkvmReferenceItem Include="@(IkvmReference)">
 
@@ -86,7 +86,7 @@
     </Target>
 
     <!-- Populates the IkvmReferenceItem set with required metadata. -->
-    <Target Name="_UpdateIkvmReferenceItemsMetadata" DependsOnTargets="GetIkvmReferenceItemsFromIkvmReferences;ResolveIkvmRuntimeAssembly;ResolveIkvmFrameworkReferences" Condition=" '@(IkvmReferenceItem)' != '' ">
+    <Target Name="_UpdateIkvmReferenceItemsMetadata" DependsOnTargets="GetIkvmReferenceItemsFromIkvmReferences;ResolveIkvmRuntimeAssembly;ResolveIkvmFrameworkReferences" Condition=" '$(TargetFramework)' != '' And '@(IkvmReferenceItem)' != '' ">
         <Error Text="Could not locate IKVM.Runtime assembly." Condition=" '$(IkvmRuntimeAssembly)' == '' " />
         <Error Text="IKVM.Runtime.dll could not be located at '$(IkvmRuntimeAssembly)'." Condition="!Exists('$(IkvmRuntimeAssembly)')" />
 
@@ -116,12 +116,12 @@
     </PropertyGroup>
 
     <!-- Assembles the set of IkvmReferenceItems from various sources. -->
-    <Target Name="GetIkvmReferenceItems" DependsOnTargets="$(GetIkvmReferenceItemsDependsOn)" Returns="@(IkvmReferenceItem)">
+    <Target Name="GetIkvmReferenceItems" DependsOnTargets="$(GetIkvmReferenceItemsDependsOn)" Returns="@(IkvmReferenceItem)" Condition=" '$(TargetFramework)' != '' ">
 
     </Target>
 
     <!-- Builds the IkvmReferenceItem set into their output items within the cache. -->
-    <Target Name="_CompileIkvmReferences" DependsOnTargets="ResolveIkvmRuntimeAssembly;ResolveIkvmFrameworkReferences" Inputs="%(IkvmReferenceItem.Compile)" Outputs="%(IkvmReferenceItem.CachePath)">
+    <Target Name="_CompileIkvmReferences" DependsOnTargets="ResolveIkvmRuntimeAssembly;ResolveIkvmFrameworkReferences" Inputs="%(IkvmReferenceItem.Compile)" Outputs="%(IkvmReferenceItem.CachePath)" Condition=" '$(TargetFramework)' != '' ">
         <Error Text="_CompileIkvmReferences has no implementation." />
     </Target>
 
@@ -134,12 +134,12 @@
         </CompileIkvmReferencesDependsOn>
     </PropertyGroup>
 
-    <Target Name="CompileIkvmReferences" DependsOnTargets="$(CompileIkvmReferencesDependsOn)">
+    <Target Name="CompileIkvmReferences" DependsOnTargets="$(CompileIkvmReferencesDependsOn)" Condition=" '$(TargetFramework)' != '' ">
 
     </Target>
 
     <!-- Adds the expected IkvmReferences to the Reference set. -->
-    <Target Name="_ResolveIkvmReferences" DependsOnTargets="GetIkvmReferenceItems">
+    <Target Name="_ResolveIkvmReferences" DependsOnTargets="GetIkvmReferenceItems" Condition=" '$(TargetFramework)' != '' ">
         <ItemGroup>
             <Reference Include="@(IkvmReferenceItem->'%(CachePath)')">
                 <ReferenceSourceTarget>ResolveIkvmReferences</ReferenceSourceTarget>
@@ -161,7 +161,7 @@
         </ResolveIkvmReferencesDependsOn>
     </PropertyGroup>
 
-    <Target Name="ResolveIkvmReferences" BeforeTargets="ResolveAssemblyReferences" DependsOnTargets="$(ResolveIkvmReferencesDependsOn)">
+    <Target Name="ResolveIkvmReferences" BeforeTargets="ResolveAssemblyReferences" DependsOnTargets="$(ResolveIkvmReferencesDependsOn)" Condition=" '$(TargetFramework)' != '' ">
 
     </Target>
 

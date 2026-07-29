@@ -8,10 +8,17 @@
         <AssemblyName>javac</AssemblyName>
         <TargetFrameworks>net8.0;net6.0;net472</TargetFrameworks>
         <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-arm64;osx-x64;osx-arm64</RuntimeIdentifiers>
+        <Prefer32Bit>false</Prefer32Bit>
         <PublishReadyToRun>true</PublishReadyToRun>
         <SelfContained>true</SelfContained>
         <StartupObject>com.sun.tools.javac.Main</StartupObject>
         <RootNamespace>ikvm.tools.javac</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net461'))">
+        <PlatformTarget>x64</PlatformTarget>
+        <RuntimeIdentifier Condition=" '$(RuntimeIdentifier)' == '' ">win-x64</RuntimeIdentifier>
+        <Prefer32Bit>false</Prefer32Bit>
     </PropertyGroup>
 
     <ItemGroup>

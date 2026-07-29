@@ -19,6 +19,12 @@
         <OpenJdkTargetOsDir Condition=" '$(IkvmJavaRuntimeIdentifier)' == 'osx' ">macosx</OpenJdkTargetOsDir>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(TargetFramework)' != '' And '$(IkvmJavaRuntimeIdentifier)' != '' ">
+        <!-- Keep distinct Java runtime variants from sharing the same obj/bin trees. -->
+        <IntermediateOutputPath>obj\$(IkvmJavaRuntimeIdentifier)\$(Configuration)\</IntermediateOutputPath>
+        <OutputPath>bin\$(IkvmJavaRuntimeIdentifier)\$(Configuration)\</OutputPath>
+    </PropertyGroup>
+
     <Import Project="$(MSBuildThisFileDirectory)..\IKVM.MSBuild\buildTransitive\IKVM.MSBuild.props" />
 
     <Import Project="IKVM.Java.runtime.jdk.props" />
@@ -41,7 +47,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="$(MSBuildThisFileDirectory)..\IKVM.Runtime-ref\IKVM.Runtime-ref.csproj" Private="False" PrivateAssets="All" IncludeNonPublicTypes="true" />
+        <ProjectReference Include="$(MSBuildThisFileDirectory)..\IKVM.Runtime-ref\IKVM.Runtime-ref.csproj" Private="False" PrivateAssets="All" IncludeNonPublicTypes="true">
+            <IsIkvmRuntimeAssembly>true</IsIkvmRuntimeAssembly>
+            <TargetPath>$(MSBuildThisFileDirectory)..\IKVM.Runtime-ref\bin\$(Configuration)\$(TargetFramework)\IKVM.Runtime.dll</TargetPath>
+        </ProjectReference>
         <ProjectReference Include="$(MSBuildThisFileDirectory)..\IKVM.Java-ref\IKVM.Java-ref.csproj" Private="False" PrivateAssets="All" HideFromJava="true" Condition=" '$(IkvmJavaRuntimeIdentifier)' == 'ref' " />
         <ProjectReference Include="$(MSBuildThisFileDirectory)..\IKVM.Java\IKVM.Java.ikvmproj" Private="False" PrivateAssets="All" HideFromJava="true" Condition=" '$(IkvmJavaRuntimeIdentifier)' != 'ref' " />
     </ItemGroup>
