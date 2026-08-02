@@ -9,9 +9,13 @@
         <IkvmMSBuildTaskFolder Condition=" '$(MSBuildRuntimeType)' != 'Core' ">net472</IkvmMSBuildTaskFolder>
         <IkvmMSBuildTaskFactory Condition=" '$(MSBuildRuntimeType)' == 'Core' "></IkvmMSBuildTaskFactory>
         <IkvmMSBuildTaskFactory Condition=" '$(MSBuildRuntimeType)' != 'Core' ">TaskHostFactory</IkvmMSBuildTaskFactory>
-        <IkvmMSBuildTaskAssembly>$(MSBuildThisFileDirectory)..\tasks\$(IkvmMSBuildTaskFolder)\IKVM.MSBuild.Tasks.dll</IkvmMSBuildTaskAssembly>
-        <IkvmCompilerToolPath>@(IkvmCompilerToolPath->WithMetadataValue('TargetFramework', '$(IkvmToolFramework)')->WithMetadataValue('RuntimeIdentifier', '$(IkvmToolRuntime)'))</IkvmCompilerToolPath>
-        <IkvmExporterToolPath>@(IkvmExporterToolPath->WithMetadataValue('TargetFramework', '$(IkvmToolFramework)')->WithMetadataValue('RuntimeIdentifier', '$(IkvmToolRuntime)'))</IkvmExporterToolPath>
+<IkvmMSBuildTaskAssembly Condition=" '$(IkvmMSBuildTaskAssembly)' == '' ">$(MSBuildThisFileDirectory)..\tasks\$(IkvmMSBuildTaskFolder)\IKVM.MSBuild.Tasks.dll</IkvmMSBuildTaskAssembly>
+        <!-- Source checkouts do not have the packaged tasks directory. -->
+        <IkvmMSBuildTaskAssembly Condition=" !Exists('$(IkvmMSBuildTaskAssembly)') And Exists('$(MSBuildThisFileDirectory)..\..\IKVM.MSBuild.Tasks\bin\$(Configuration)\$(IkvmMSBuildTaskFolder)\IKVM.MSBuild.Tasks.dll') ">$(MSBuildThisFileDirectory)..\..\IKVM.MSBuild.Tasks\bin\$(Configuration)\$(IkvmMSBuildTaskFolder)\IKVM.MSBuild.Tasks.dll</IkvmMSBuildTaskAssembly>
+        <IkvmCompilerToolPath Condition=" !Exists('$(MSBuildThisFileDirectory)..\..\ikvmc\bin\$(Configuration)\$(IkvmToolFramework)\$(IkvmToolRuntime)\ikvmc.exe') ">@(IkvmCompilerToolPath->WithMetadataValue('TargetFramework', '$(IkvmToolFramework)')->WithMetadataValue('RuntimeIdentifier', '$(IkvmToolRuntime)'))</IkvmCompilerToolPath>
+        <IkvmCompilerToolPath Condition=" Exists('$(MSBuildThisFileDirectory)..\..\ikvmc\bin\$(Configuration)\$(IkvmToolFramework)\$(IkvmToolRuntime)\ikvmc.exe') ">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\ikvmc\bin\$(Configuration)\$(IkvmToolFramework)\$(IkvmToolRuntime)'))</IkvmCompilerToolPath>
+        <IkvmExporterToolPath Condition=" !Exists('$(MSBuildThisFileDirectory)..\..\ikvmstub\bin\$(Configuration)\$(IkvmToolFramework)\$(IkvmToolRuntime)\ikvmstub.exe') ">@(IkvmExporterToolPath->WithMetadataValue('TargetFramework', '$(IkvmToolFramework)')->WithMetadataValue('RuntimeIdentifier', '$(IkvmToolRuntime)'))</IkvmExporterToolPath>
+        <IkvmExporterToolPath Condition=" Exists('$(MSBuildThisFileDirectory)..\..\ikvmstub\bin\$(Configuration)\$(IkvmToolFramework)\$(IkvmToolRuntime)\ikvmstub.exe') ">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\ikvmstub\bin\$(Configuration)\$(IkvmToolFramework)\$(IkvmToolRuntime)'))</IkvmExporterToolPath>
     </PropertyGroup>
 
     <UsingTask TaskName="IkvmCleanDir" AssemblyFile="$(IkvmMSBuildTaskAssembly)" TaskFactory="$(IkvmMSBuildTaskFactory)" Condition="Exists('$(IkvmMSBuildTaskAssembly)')" />

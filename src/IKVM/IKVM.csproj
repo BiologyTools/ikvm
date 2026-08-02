@@ -4,7 +4,7 @@
         <TargetFrameworks>net472;net6.0;net8.0</TargetFrameworks>
         <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <Description>Java SE 8 Virtual Machine for .NET</Description>
+        <Description>Java SE 11 Virtual Machine for .NET</Description>
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.config</AllowedOutputExtensionsInPackageBuildOutputFolder>
         <NoWarn>NU5118</NoWarn>
@@ -25,10 +25,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\IKVM.MSBuild\IKVM.MSBuild.msbuildproj">
+        <ProjectReference Include="..\IKVM.MSBuild\IKVM.MSBuild.msbuildproj" SetTargetFramework="TargetFramework=$(TargetFramework)" SkipGetTargetFrameworkProperties="true">
             <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
         </ProjectReference>
-        <ProjectReference Include="..\IKVM.Image\IKVM.Image.csproj">
+        <ProjectReference Include="..\IKVM.Image\IKVM.Image.csproj" SetTargetFramework="TargetFramework=$(TargetFramework)" SkipGetTargetFrameworkProperties="true">
             <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
         </ProjectReference>
     </ItemGroup>

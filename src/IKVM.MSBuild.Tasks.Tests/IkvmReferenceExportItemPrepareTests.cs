@@ -102,10 +102,10 @@ namespace IKVM.MSBuild.Tasks.Tests
                 this.pathToDelete = pathToDelete;
             }
 
-            protected override Task OnAssembliesPreLoadedAsync(CancellationToken cancellationToken)
+            protected override System.Threading.Tasks.Task OnAssembliesPreLoadedAsync(CancellationToken cancellationToken)
             {
                 File.Delete(pathToDelete);
-                return Task.CompletedTask;
+                return System.Threading.Tasks.Task.CompletedTask;
             }
 
         }

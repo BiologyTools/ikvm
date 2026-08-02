@@ -1,4 +1,4 @@
-/*
+﻿/*
   Copyright (C) 2002-2015 Jeroen Frijters
 
   This software is provided 'as-is', without any express or implied
@@ -354,7 +354,7 @@ namespace IKVM.Runtime
         /// <exception cref="ClassFormatError"></exception>
         static string GetClassName(IKVM.ByteCode.Decoding.ClassFile reader, out bool isstub)
         {
-            if (reader.Version < new ClassFormatVersion(45, 3) || reader.Version > 52)
+            if (reader.Version < new ClassFormatVersion(45, 3) || reader.Version > new ClassFormatVersion((ushort)SupportedVersions.Maximum, 0))
                 throw new UnsupportedClassVersionError(reader.Version);
 
             // this is a terrible way to go about encoding this information
@@ -383,7 +383,7 @@ namespace IKVM.Runtime
 
             try
             {
-                if (clazz.Version < new ClassFormatVersion(45, 3) || clazz.Version > 52)
+                if (clazz.Version < new ClassFormatVersion(45, 3) || clazz.Version > new ClassFormatVersion((ushort)SupportedVersions.Maximum, 0))
                     throw new UnsupportedClassVersionError(clazz.Version);
 
                 // load a copy of the constant pool using our own custom class hierarchy, reading data from IKVM.ByteCdoe

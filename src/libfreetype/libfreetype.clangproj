@@ -4,7 +4,7 @@
     <PropertyGroup>
         <TargetName>freetype</TargetName>
         <OutputType>dll</OutputType>
-        <TargetIdentifiers>win-x86;win-x64;win-arm64;osx-x64;osx-arm64</TargetIdentifiers>
+        <TargetIdentifiers Condition=" '$(IkvmFastLocalBuild)' != 'true' ">win-x86;win-x64;win-arm64;osx-x64;osx-arm64</TargetIdentifiers>
         <FreeTypeDir>..\..\ext\freetype\</FreeTypeDir>
         <LanguageStandard>c17</LanguageStandard>
     </PropertyGroup>

@@ -14,7 +14,7 @@
     <PropertyGroup>
         <Verbose>true</Verbose>
         <DebugSymbols>true</DebugSymbols>
-        <TargetIdentifiers>$(_SupportedRuntimes)</TargetIdentifiers>
+        <TargetIdentifiers>$(EnabledRuntimes)</TargetIdentifiers>
         <TargetTriple Condition=" '$(TargetIdentifier)' == 'win-x64' ">x86_64-pc-windows-msvc</TargetTriple>
         <TargetTriple Condition=" '$(TargetIdentifier)' == 'win-x86' ">i686-pc-windows-msvc</TargetTriple>
         <TargetTriple Condition=" '$(TargetIdentifier)' == 'win-arm64' ">aarch64-pc-windows-msvc</TargetTriple>
@@ -58,6 +58,11 @@
         <_WindowsSdkVersion Condition=" '$(_WindowsSdkVersion)' == '' And '$(WindowsTargetPlatformVersion)' != '' ">$(WindowsTargetPlatformVersion)</_WindowsSdkVersion>
         <_WindowsSdkVersion Condition=" '$(_WindowsSdkVersion)' == '' And '$(WindowsSDKVersion)' != '' ">$(WindowsSDKVersion)</_WindowsSdkVersion>
         <_WindowsSdkVersion Condition=" '$(_WindowsSdkVersion)' == '' And '$(WindowsSDKLibVersion)' != '' ">$(WindowsSDKLibVersion)</_WindowsSdkVersion>
+        <_VisualStudioInstallDirCandidate Condition=" '$(_VisualStudioInstallDirCandidate)' == '' ">$([System.IO.Path]::GetFullPath('$(MSBuildToolsPath)\..\..\..\..'))\</_VisualStudioInstallDirCandidate>
+        <_VisualStudioInstallDir Condition=" '$(_VisualStudioInstallDir)' == '' And Exists('$(_VisualStudioInstallDirCandidate)VC\Auxiliary\Build\Microsoft.VCToolsVersion.default.txt') ">$(_VisualStudioInstallDirCandidate)</_VisualStudioInstallDir>
+        <_VCToolsVersionFile Condition=" '$(_VCToolsVersionFile)' == '' And '$(_VisualStudioInstallDir)' != '' ">$(_VisualStudioInstallDir)VC\Auxiliary\Build\Microsoft.VCToolsVersion.default.txt</_VCToolsVersionFile>
+        <_VCToolsInstallDir Condition=" '$(_VCToolsInstallDir)' == '' And Exists('$(_VCToolsVersionFile)') ">$(_VisualStudioInstallDir)VC\Tools\MSVC\$([System.IO.File]::ReadAllText('$(_VCToolsVersionFile)').Trim())\</_VCToolsInstallDir>
+        <_WindowsSdkVersion Condition=" '$(_WindowsSdkVersion)' == '' ">$([MSBuild]::GetRegistryValue('HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Microsoft SDKs\Windows\v10.0', 'ProductVersion')).0</_WindowsSdkVersion>
     </PropertyGroup>
 
     <ItemGroup Condition="$(TargetIdentifier.StartsWith('win-'))">

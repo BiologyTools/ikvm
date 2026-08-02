@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\IKVM.MSBuild.Tools\IKVM.MSBuild.Tools.csproj" ReferenceOutputAssembly="true" />
+        <ProjectReference Include="..\IKVM.MSBuild.Tools\IKVM.MSBuild.Tools.csproj" ReferenceOutputAssembly="true" SetTargetFramework="TargetFramework=$(TargetFramework)" SkipGetTargetFrameworkProperties="true" />
     </ItemGroup>
 
     <ItemGroup>

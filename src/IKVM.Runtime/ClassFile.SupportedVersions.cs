@@ -32,7 +32,8 @@ namespace IKVM.Runtime
         {
 
             internal static readonly int Minimum = 45;
-            internal static readonly int Maximum = 52;
+            // Java 11 class files use major version 55.
+            internal static readonly int Maximum = 55;
 
         }
 
