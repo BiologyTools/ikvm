@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
     <Import Project="$(MSBuildThisFileDirectory)..\IKVM.NET.Sdk\Sdk\Sdk.props" />
 
     <PropertyGroup>
@@ -10,10 +10,12 @@
 
     <ItemGroup>
         <None Include="SocketOptionRegistry.java" />
+        <None Include="StringConcatFactory.java" />
     </ItemGroup>
 
     <ItemGroup>
         <Compile Include="SocketOptionRegistry.java" />
+        <Compile Include="StringConcatFactory.java" />
     </ItemGroup>
     
     <Import Project="..\IKVM.Java\IKVM.Java.runtime.props" />
