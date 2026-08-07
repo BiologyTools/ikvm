@@ -10,6 +10,15 @@
         <ImageRuntimeIdentifier>win-x64</ImageRuntimeIdentifier>
     </PropertyGroup>
 
+    <!--
+        Native projects depend on this through imported targets. Declare it
+        here as well so solution builds serialize Java source generation.
+    -->
+    <ItemGroup>
+        <ProjectReference Include="..\IKVM.Java.runtime.win\IKVM.Java.runtime.win.ikvmproj"
+                          ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
     <Import Sdk="Microsoft.Build.NoTargets" Project="Sdk.targets" />
     <Import Project="$(MSBuildThisFileDirectory)..\IKVM.Image\IKVM.Image.runtime.targets" />
 </Project>

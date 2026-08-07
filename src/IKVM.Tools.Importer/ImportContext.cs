@@ -290,13 +290,21 @@ namespace IKVM.Tools.Importer
 
         internal static byte[] ReadAllBytes(FileInfo path)
         {
-            try
+            for (var attempt = 0; ; attempt++)
             {
-                return File.ReadAllBytes(path.FullName);
-            }
-            catch (Exception x)
-            {
-                throw new FatalCompilerErrorException(DiagnosticEvent.ErrorReadingFile(path.ToString(), x.Message));
+                try
+                {
+                    return File.ReadAllBytes(path.FullName);
+                }
+                catch (IOException) when (attempt < 5)
+                {
+                    // javac can briefly retain a handle after it reports success.
+                    Thread.Sleep(200 * (attempt + 1));
+                }
+                catch (Exception x)
+                {
+                    throw new FatalCompilerErrorException(DiagnosticEvent.ErrorReadingFile(path.ToString(), x.Message));
+                }
             }
         }
 

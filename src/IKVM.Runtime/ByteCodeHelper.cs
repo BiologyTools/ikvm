@@ -1428,11 +1428,9 @@ namespace IKVM.Runtime
             }
 
             IndyCallSite<T> ics;
-            if (x != null || cs == null || (ics = cs.ics as IndyCallSite<T>) == null)
+            if (x != null || cs == null)
             {
-                x = MapException<Exception>(x ?? (cs == null
-                    ? (Exception)new global::java.lang.ClassCastException("bootstrap method failed to produce a CallSite")
-                    : new global::java.lang.invoke.WrongMethodTypeException()), MapFlags.None);
+                x = MapException<Exception>(x ?? (Exception)new global::java.lang.ClassCastException("bootstrap method failed to produce a CallSite"), MapFlags.None);
                 global::java.lang.invoke.MethodType type = LoadMethodType<T>();
                 global::java.lang.invoke.MethodHandle exc = x is global::java.lang.BootstrapMethodError
                     ? global::java.lang.invoke.MethodHandles.constant(typeof(global::java.lang.BootstrapMethodError), x)
@@ -1445,6 +1443,19 @@ namespace IKVM.Runtime
                             global::java.lang.invoke.MethodHandles.throwException(type.returnType(), typeof(global::java.lang.BootstrapMethodError)),
                                 exc),
                         0, type.parameterArray()));
+            }
+            else if ((ics = cs.ics as IndyCallSite<T>) == null)
+            {
+                ics = new IndyCallSite<T>();
+                var expectedType = LoadMethodType<T>();
+                try
+                {
+                    ((IIndyCallSite)ics).SetTarget(cs.dynamicInvoker().asType(expectedType));
+                }
+                catch (global::java.lang.invoke.WrongMethodTypeException e)
+                {
+                    throw new global::java.lang.invoke.WrongMethodTypeException("call site " + cs.type() + ", requested " + expectedType + ": " + e.Message);
+                }
             }
 
             var curr = site;
@@ -1473,11 +1484,12 @@ namespace IKVM.Runtime
 
             global::java.lang.invoke.MethodType typeCache = null;
             IndyCallSite<T> ics;
-            if (x != null || cs == null || cs.type() != DynamicLoadMethodType(ref typeCache, signature, callerID))
+            var expectedType = DynamicLoadMethodType(ref typeCache, signature, callerID);
+            if (x != null || cs == null || !cs.type().equals(expectedType))
             {
                 x = MapException<Exception>(x ?? (cs == null
                     ? (Exception)new global::java.lang.ClassCastException("bootstrap method failed to produce a CallSite")
-                    : new global::java.lang.invoke.WrongMethodTypeException()), MapFlags.None);
+                    : new global::java.lang.invoke.WrongMethodTypeException("bootstrap method returned " + cs.type() + ", expected " + expectedType)), MapFlags.None);
                 global::java.lang.invoke.MethodType type = LoadMethodType<T>();
                 global::java.lang.invoke.MethodHandle exc = x is global::java.lang.BootstrapMethodError
                     ? global::java.lang.invoke.MethodHandles.constant(typeof(global::java.lang.BootstrapMethodError), x)
@@ -1494,7 +1506,15 @@ namespace IKVM.Runtime
             else
             {
                 ics = new IndyCallSite<T>();
-                ((IIndyCallSite)ics).SetTarget(cs.dynamicInvoker().asType(LoadMethodType<T>()));
+                var delegateType = LoadMethodType<T>();
+                try
+                {
+                    ((IIndyCallSite)ics).SetTarget(cs.dynamicInvoker().asType(delegateType));
+                }
+                catch (global::java.lang.invoke.WrongMethodTypeException e)
+                {
+                    throw new global::java.lang.invoke.WrongMethodTypeException("call site " + cs.type() + ", requested " + delegateType + ": " + e.Message);
+                }
             }
 
             IndyCallSite<T> curr = site;

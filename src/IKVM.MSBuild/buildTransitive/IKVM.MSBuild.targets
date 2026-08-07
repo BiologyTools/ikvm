@@ -51,7 +51,7 @@
             <_IkvmRuntimeAssembly Include="@(ProjectReference->'%(TargetPath)')" Condition=" '%(ProjectReference.IsIkvmRuntimeAssembly)' == 'true' And '%(ProjectReference.TargetPath)' != '' " />
         </ItemGroup>
         <PropertyGroup>
-            <IkvmRuntimeAssembly>@(_IkvmRuntimeAssembly)</IkvmRuntimeAssembly>
+            <IkvmRuntimeAssembly Condition="'$(IkvmRuntimeAssembly)' == ''">@(_IkvmRuntimeAssembly)</IkvmRuntimeAssembly>
         </PropertyGroup>
         <Error Text="Could not locate IKVM.Runtime.dll." Condition=" '$(IkvmRuntimeAssembly)' == '' " />
     </Target>

@@ -22,14 +22,17 @@ public final class StringConcatFactory {
     public static CallSite makeConcatWithConstants(MethodHandles.Lookup lookup,
             String name, MethodType concatType, String recipe, Object... constants)
             throws Throwable {
-        if (lookup.lookupClass().getName().startsWith("ch.qos.logback.")) {
-            MethodHandle constant = MethodHandles.constant(concatType.returnType(),
-                concat(recipe, constants, new Object[concatType.parameterCount()]));
-            constant = MethodHandles.dropArguments(constant, 0, concatType.parameterArray());
-            return new ConstantCallSite(constant);
-        }
-
         try {
+            if (concatType.returnType() == String.class
+                    && concatType.parameterCount() == 1
+                    && concatType.parameterType(0) == String.class) {
+                MethodHandle handle = MethodHandles.lookup().findStatic(
+                    StringConcatFactory.class,
+                    "concatString",
+                    MethodType.methodType(String.class, String.class, Object[].class, String.class));
+                return new ConstantCallSite(handle.bindTo(recipe).bindTo(constants));
+            }
+
             MethodHandle handle = MethodHandles.lookup().findStatic(
                 StringConcatFactory.class,
                 "concat",
@@ -37,7 +40,7 @@ public final class StringConcatFactory {
             handle = handle.bindTo(recipe);
             handle = handle.bindTo(constants);
             handle = handle.asCollector(Object[].class, concatType.parameterCount());
-            return new ConstantCallSite(MethodHandles.explicitCastArguments(handle, concatType));
+            return new ConstantCallSite(handle.asType(concatType));
         } catch (Throwable t) {
             t.printStackTrace();
             throw t;
@@ -58,5 +61,8 @@ public final class StringConcatFactory {
                 value.append(c);
         }
         return value.toString();
+    }
+    private static String concatString(String recipe, Object[] constants, String argument) {
+        return concat(recipe, constants, new Object[] { argument });
     }
 }
