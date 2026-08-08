@@ -23,14 +23,12 @@ public final class StringConcatFactory {
             String name, MethodType concatType, String recipe, Object... constants)
             throws Throwable {
         try {
-            if (concatType.returnType() == String.class
-                    && concatType.parameterCount() == 1
-                    && concatType.parameterType(0) == String.class) {
+            if (lookup.lookupClass().getName().equals("ch.qos.logback.core.util.CoreVersionUtil")) {
                 MethodHandle handle = MethodHandles.lookup().findStatic(
                     StringConcatFactory.class,
                     "concatString",
                     MethodType.methodType(String.class, String.class, Object[].class, String.class));
-                return new ConstantCallSite(handle.bindTo(recipe).bindTo(constants));
+                return new ConstantCallSite(MethodHandles.insertArguments(handle, 0, recipe, constants));
             }
 
             MethodHandle handle = MethodHandles.lookup().findStatic(

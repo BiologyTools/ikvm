@@ -1481,15 +1481,12 @@ namespace IKVM.Runtime
                 lock (cs.ics)
                     cs.ics.SetTarget(cs.target);
             }
-
-            global::java.lang.invoke.MethodType typeCache = null;
             IndyCallSite<T> ics;
-            var expectedType = DynamicLoadMethodType(ref typeCache, signature, callerID);
-            if (x != null || cs == null || !cs.type().equals(expectedType))
+            if (x != null || cs == null)
             {
                 x = MapException<Exception>(x ?? (cs == null
                     ? (Exception)new global::java.lang.ClassCastException("bootstrap method failed to produce a CallSite")
-                    : new global::java.lang.invoke.WrongMethodTypeException("bootstrap method returned " + cs.type() + ", expected " + expectedType)), MapFlags.None);
+                    : new global::java.lang.ClassCastException("bootstrap method failed to produce a CallSite")), MapFlags.None);
                 global::java.lang.invoke.MethodType type = LoadMethodType<T>();
                 global::java.lang.invoke.MethodHandle exc = x is global::java.lang.BootstrapMethodError
                     ? global::java.lang.invoke.MethodHandles.constant(typeof(global::java.lang.BootstrapMethodError), x)
