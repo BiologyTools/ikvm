@@ -23,15 +23,21 @@ public final class StringConcatFactory {
             String name, MethodType concatType, String recipe, Object... constants)
             throws Throwable {
         try {
-            if (lookup.lookupClass().getName().equals("ch.qos.logback.core.util.CoreVersionUtil")) {
-                MethodHandle handle = MethodHandles.lookup().findStatic(
-                    StringConcatFactory.class,
-                    "concatString",
-                    MethodType.methodType(String.class, String.class, Object[].class, String.class));
-                return new ConstantCallSite(MethodHandles.insertArguments(handle, 0, recipe, constants));
+            if (concatType.parameterCount() == 1 && concatType.returnType() == String.class
+                    && recipe.equals("\u0001-version.properties")) {
+                MethodHandle handle = lookup.findStatic(
+                    StringConcatFactory.class, "appendVersionProperties", concatType);
+                return new ConstantCallSite(handle);
             }
 
-            MethodHandle handle = MethodHandles.lookup().findStatic(
+            if (concatType.parameterCount() == 1 && concatType.returnType() == String.class
+                    && recipe.equals("\u0001-version")) {
+                MethodHandle handle = lookup.findStatic(
+                    StringConcatFactory.class, "appendVersion", concatType);
+                return new ConstantCallSite(handle);
+            }
+
+            MethodHandle handle = lookup.findStatic(
                 StringConcatFactory.class,
                 "concat",
                 MethodType.methodType(String.class, String.class, Object[].class, Object[].class));
@@ -40,12 +46,11 @@ public final class StringConcatFactory {
             handle = handle.asCollector(Object[].class, concatType.parameterCount());
             return new ConstantCallSite(handle.asType(concatType));
         } catch (Throwable t) {
-            t.printStackTrace();
-            throw t;
+            throw new BootstrapMethodError("StringConcatFactory failure: " + t, t);
         }
     }
 
-    private static String concat(String recipe, Object[] constants, Object[] arguments) {
+    public static String concat(String recipe, Object[] constants, Object[] arguments) {
         StringBuilder value = new StringBuilder();
         int argumentIndex = 0;
         int constantIndex = 0;
@@ -60,7 +65,10 @@ public final class StringConcatFactory {
         }
         return value.toString();
     }
-    private static String concatString(String recipe, Object[] constants, String argument) {
-        return concat(recipe, constants, new Object[] { argument });
+    public static String appendVersionProperties(String value) {
+        return value + "-version.properties";
+    }
+    public static String appendVersion(String value) {
+        return value + "-version";
     }
 }

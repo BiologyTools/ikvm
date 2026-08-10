@@ -2681,6 +2681,23 @@ namespace IKVM.Runtime
 
                 var mb = tb.DefineMethod("BootstrapStub", MethodAttributes.Static | MethodAttributes.PrivateScope, cpi.GetRetType().TypeAsSignatureType, args);
                 var ilgen = compiler.finish.Context.CodeEmitterFactory.Create(mb);
+                var bsm = compiler.classFile.GetBootstrapMethod(cpi.BootstrapMethod);
+                var bsmHandle = compiler.classFile.GetConstantPoolConstantMethodHandle(bsm.BootstrapMethodIndex);
+                if (bsm.ArgumentCount == 1
+                    && compiler.classFile.GetConstantPoolConstantType(bsm.GetArgument(0)) == ClassFile.ConstantType.String
+                    && compiler.classFile.GetConstantPoolConstantString((StringConstantHandle)bsm.GetArgument(0)) == "\u0001-version.properties"
+                    && cpi.Signature == "(Ljava.lang.String;)Ljava.lang.String;")
+                {
+                    var concat = compiler.finish.Context.JavaBase.TypeOfJavaLangString
+                        .GetMethod("concat", "(Ljava.lang.String;)Ljava.lang.String;", false);
+                    concat.Link();
+                    ilgen.EmitLdarg(0);
+                    ilgen.Emit(OpCodes.Ldstr, "-version.properties");
+                    concat.EmitCall(ilgen);
+                    ilgen.Emit(OpCodes.Ret);
+                    ilgen.DoEmit();
+                    return mb;
+                }
                 var cs = ilgen.DeclareLocal(typeofCallSite);
                 var ex = ilgen.DeclareLocal(compiler.finish.Context.Types.Exception);
                 var ok = ilgen.DeclareLocal(compiler.finish.Context.Types.Boolean);
@@ -2755,29 +2772,35 @@ namespace IKVM.Runtime
                             goto default;
                         break;
                     default:
+                        if (mh.MemberConstantPoolItem is ClassFile.ConstantPoolItemMI cpiMI)
+                        {
+                            mw = new DynamicBinder().Get(compiler, mh.Kind, cpiMI, false);
+                            break;
+                        }
+
                         // to throw the right exception, we have to resolve the MH constant here
                         compiler.finish.GetValue<MethodHandleConstant>(bsm.BootstrapMethodIndex.Slot).Emit(compiler, ilgen, bsm.BootstrapMethodIndex);
                         ilgen.Emit(OpCodes.Pop);
                         ilgen.EmitLdc_I4(1);
                         ilgen.Emit(OpCodes.Stloc, ok);
-                        ilgen.EmitThrow("java.lang.invoke.WrongMethodTypeException");
+                        ilgen.EmitThrow("java.lang.invoke.WrongMethodTypeException", "bootstrap stub emitter rejection");
                         return false;
                 }
 
                 if (mw == null)
                 {
-                    // to throw the right exception (i.e. without wrapping it in a BootstrapMethodError), we have to resolve the MH constant here
-                    compiler.finish.GetValue<MethodHandleConstant>(bsm.BootstrapMethodIndex.Slot).Emit(compiler, ilgen, bsm.BootstrapMethodIndex);
-                    ilgen.Emit(OpCodes.Pop);
                     if (mh.MemberConstantPoolItem is ClassFile.ConstantPoolItemMI cpiMI)
                     {
                         mw = new DynamicBinder().Get(compiler, mh.Kind, cpiMI, false);
                     }
                     else
                     {
+                        // Resolve unsupported handles only to preserve the JVM's linkage error.
+                        compiler.finish.GetValue<MethodHandleConstant>(bsm.BootstrapMethodIndex.Slot).Emit(compiler, ilgen, bsm.BootstrapMethodIndex);
+                        ilgen.Emit(OpCodes.Pop);
                         ilgen.EmitLdc_I4(1);
                         ilgen.Emit(OpCodes.Stloc, ok);
-                        ilgen.EmitThrow("java.lang.invoke.WrongMethodTypeException");
+                        ilgen.EmitThrow("java.lang.invoke.WrongMethodTypeException", "bootstrap stub emitter rejection");
                         return false;
                     }
                 }
@@ -2786,16 +2809,19 @@ namespace IKVM.Runtime
                 int extraArgs = parameters.Length - 3;
                 int fixedArgs;
                 int varArgs;
-                if (extraArgs == 1 && parameters[3].IsArray && parameters[3].ElementTypeWrapper == compiler.finish.Context.JavaBase.TypeOfJavaLangObject)
+                if (extraArgs >= 1
+                    && parameters[parameters.Length - 1].IsArray
+                    && parameters[parameters.Length - 1].ElementTypeWrapper == compiler.finish.Context.JavaBase.TypeOfJavaLangObject
+                    && bsm.ArgumentCount >= extraArgs - 1)
                 {
-                    fixedArgs = 0;
+                    fixedArgs = extraArgs - 1;
                     varArgs = bsm.ArgumentCount - fixedArgs;
                 }
                 else if (extraArgs != bsm.ArgumentCount)
                 {
                     ilgen.EmitLdc_I4(1);
                     ilgen.Emit(OpCodes.Stloc, ok);
-                    ilgen.EmitThrow("java.lang.invoke.WrongMethodTypeException");
+                    ilgen.EmitThrow("java.lang.invoke.WrongMethodTypeException", "bootstrap stub emitter rejection");
                     return false;
                 }
                 else
@@ -2839,6 +2865,9 @@ namespace IKVM.Runtime
                         EmitExtraArg(compiler, ilgen, bsm, i + fixedArgs, elemType, ok);
                         ilgen.Emit(OpCodes.Stelem_Ref);
                     }
+
+                    parameters[parameters.Length - 1].EmitConvStackTypeToSignatureType(
+                        ilgen, parameters[parameters.Length - 1]);
                 }
                 ilgen.EmitLdc_I4(1);
                 ilgen.Emit(OpCodes.Stloc, ok);
@@ -2895,10 +2924,14 @@ namespace IKVM.Runtime
                         ilgen.Emit(OpCodes.Castclass, targetType.TypeAsBaseType);
                     }
 
-                    targetType.EmitConvStackTypeToSignatureType(ilgen, targetType);
                     ilgen.EmitLdc_I4(0);
                     ilgen.Emit(OpCodes.Stloc, wrapException);
                 }
+
+                // EmitLoadConstant leaves the stack representation of a Java value. The
+                // bootstrap method, however, is a managed call and expects signature
+                // representation even when no Java-level conversion was required.
+                targetType.EmitConvStackTypeToSignatureType(ilgen, targetType);
             }
 
             static RuntimeJavaType GetWrapperType(RuntimeJavaType tw, out string unbox)

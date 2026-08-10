@@ -1435,7 +1435,7 @@ namespace IKVM.Runtime
                 global::java.lang.invoke.MethodHandle exc = x is global::java.lang.BootstrapMethodError
                     ? global::java.lang.invoke.MethodHandles.constant(typeof(global::java.lang.BootstrapMethodError), x)
                     : global::java.lang.invoke.MethodHandles.publicLookup().findConstructor(typeof(global::java.lang.BootstrapMethodError), global::java.lang.invoke.MethodType.methodType(typeof(void), typeof(string), typeof(Exception)))
-                        .bindTo("call site initialization exception").bindTo(x);
+                        .bindTo("call site initialization exception: " + x + "\n" + x.StackTrace).bindTo(x);
                 ics = new IndyCallSite<T>();
                 ((IIndyCallSite)ics).SetTarget(
                     global::java.lang.invoke.MethodHandles.dropArguments(
@@ -1491,7 +1491,7 @@ namespace IKVM.Runtime
                 global::java.lang.invoke.MethodHandle exc = x is global::java.lang.BootstrapMethodError
                     ? global::java.lang.invoke.MethodHandles.constant(typeof(global::java.lang.BootstrapMethodError), x)
                     : global::java.lang.invoke.MethodHandles.publicLookup().findConstructor(typeof(global::java.lang.BootstrapMethodError), global::java.lang.invoke.MethodType.methodType(typeof(void), typeof(string), typeof(Exception)))
-                        .bindTo("call site initialization exception").bindTo(x);
+                        .bindTo("call site initialization exception: " + x + "\n" + x.StackTrace).bindTo(x);
                 ics = new IndyCallSite<T>();
                 ((IIndyCallSite)ics).SetTarget(
                     global::java.lang.invoke.MethodHandles.dropArguments(
