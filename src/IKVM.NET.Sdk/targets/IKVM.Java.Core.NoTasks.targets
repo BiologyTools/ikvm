@@ -114,6 +114,11 @@ Value = b.ToString();
         <IkvmGetBase36Hash Value="$(MSBuildThisFileFullPath)">
             <Output TaskParameter="Value" PropertyName="_ExportReferenceTempSuffix" />
         </IkvmGetBase36Hash>
+        <!-- Each concurrent MSBuild node needs its own temporary export and cache-promotion paths. -->
+        <PropertyGroup>
+            <_ExportReferenceStageSuffix>$([System.Guid]::NewGuid().ToString('N'))</_ExportReferenceStageSuffix>
+            <_ExportReferenceTempSuffix>$(_ExportReferenceTempSuffix).$(_ExportReferenceStageSuffix)</_ExportReferenceTempSuffix>
+        </PropertyGroup>
     </Target>
 
     <!-- Override IKVM.NET.Sdk: directly invoke executable  -->
@@ -129,7 +134,12 @@ Value = b.ToString();
             <_ReferenceExportLibrary Include="%(ReferenceExport.Libraries)" />
         </ItemGroup>
 
-        <!-- Output to stage path then copy to cache path to be atomic. -->
+        <!-- Use an invocation-specific stage path so concurrent MSBuild nodes never share a JAR. -->
+        <ItemGroup>
+            <ReferenceExport Update="@(ReferenceExport)">
+                <StagePath>$([System.IO.Path]::Combine($([System.IO.Path]::GetDirectoryName('%(ReferenceExport.CachePath)')), '$(_ExportReferenceStageSuffix)', '%(ReferenceExport.Filename).jar'))</StagePath>
+            </ReferenceExport>
+        </ItemGroup>
         <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('%(ReferenceExport.StagePath)'))" />
         <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('%(ReferenceExport.CachePath)'))" />
 

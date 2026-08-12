@@ -148,6 +148,7 @@ namespace IKVM.Runtime
             {
                 return (
                     caller == DeclaringType ||
+                    IsNestmateOf(caller, DeclaringType) ||
                     IsPublicOrProtectedMemberAccessible(caller, instance) ||
                     (IsInternal && DeclaringType.InternalsVisibleTo(caller)) ||
                     (!IsPrivate && DeclaringType.IsPackageAccessibleFrom(caller)))
@@ -160,6 +161,19 @@ namespace IKVM.Runtime
             return false;
         }
 
+        static bool IsNestmateOf(RuntimeJavaType caller, RuntimeJavaType declaringType)
+        {
+            if (caller.ClassLoader != declaringType.ClassLoader)
+                return false;
+
+            return string.Equals(GetNestHostName(caller.Name), GetNestHostName(declaringType.Name), StringComparison.Ordinal);
+        }
+
+        static string GetNestHostName(string name)
+        {
+            var separator = name.IndexOf('$');
+            return separator < 0 ? name : name.Substring(0, separator);
+        }
         bool IsPublicOrProtectedMemberAccessible(RuntimeJavaType caller, RuntimeJavaType instance)
         {
             if (IsPublic || (IsProtected && caller.IsSubTypeOf(DeclaringType) && (IsStatic || instance.IsUnloadable || instance.IsSubTypeOf(caller))))

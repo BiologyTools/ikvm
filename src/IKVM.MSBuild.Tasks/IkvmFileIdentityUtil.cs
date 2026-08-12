@@ -1,4 +1,4 @@
-﻿namespace IKVM.MSBuild.Tasks
+namespace IKVM.MSBuild.Tasks
 {
 
     using System;
@@ -98,21 +98,23 @@
             if (string.IsNullOrWhiteSpace(path))
                 throw new ArgumentException($"'{nameof(path)}' cannot be null or whitespace.", nameof(path));
 
-            for (var attempt = 0; attempt < 2; attempt++)
+            // A project reference can be atomically replaced by a concurrent target-framework
+            // build between File.Exists and File.OpenRead. Retry long enough for that replacement
+            // to complete instead of treating the transient missing file as an invalid reference.
+            const int maxAttempts = 10;
+            for (var attempt = 0; attempt < maxAttempts; attempt++)
             {
                 var task = cache.GetOrAdd(path, path => CreateIdentityForFileAsync(path, log, cancellationToken));
                 var result = await task;
                 if (string.IsNullOrWhiteSpace(result.Identity) == false)
                     return result.Identity;
 
-                if (File.Exists(path) == false)
-                {
-                    RemoveCachedIdentity(path, task);
-                    return null;
-                }
-
                 RemoveCachedIdentity(path, task);
+                if (attempt + 1 < maxAttempts)
+                    await System.Threading.Tasks.Task.Delay(100, cancellationToken);
             }
+
+            return null;
 
             return null;
         }

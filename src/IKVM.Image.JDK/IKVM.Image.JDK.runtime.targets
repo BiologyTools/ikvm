@@ -64,7 +64,15 @@
         </PublishProjectReference>
     </ItemGroup>
 
-    <Target Name="CollectIkvmImageBinItems" BeforeTargets="ExpandIkvmImageItems" DependsOnTargets="CollectPublishProjectReferenceItems;GetPublishProjectReferenceOutputItems">
+    <!-- The .NET 9+ SDK no longer provides the publish-internal targets used here. -->
+    <Target Name="CollectIkvmImageBinItems" BeforeTargets="ExpandIkvmImageItems">
+        <MSBuild Projects="@(PublishProjectReference)"
+                 Targets="%(PublishProjectReference.PublishItemGroup)"
+                 Properties="%(PublishProjectReference.SetTargetFramework);%(PublishProjectReference.SetRuntimeIdentifier);%(PublishProjectReference.PublishItemMetadata)"
+                 BuildInParallel="false"
+                 Condition="'@(PublishProjectReference)' != ''">
+            <Output TaskParameter="TargetOutputs" ItemName="PublishIkvmImageBinItem" />
+        </MSBuild>
         <ItemGroup>
             <IkvmImageItem Include="@(PublishIkvmImageBinItem)">
                 <ImagePath>bin\%(PublishIkvmImageBinItem.PublishItemPath)</ImagePath>
