@@ -22,9 +22,13 @@
 
     <Import Project="$(MSBuildThisFileDirectory)IKVM.NET.Sdk.Java.targets" />
 
+    <PropertyGroup>
+        <IkvmPackageId Condition=" '$(IkvmPackageId)' == '' ">IKVM11</IkvmPackageId>
+    </PropertyGroup>
+
     <ItemGroup Condition=" '$(DisableImplicitIkvmPackageReference)' != 'true' ">
-        <PackageReference Include="IKVM" Version="$(IkvmVersion)" IsImplicitlyDefined="true" />
-        <PackageReference Include="IKVM.MSBuild" Version="$(IkvmVersion)" IsImplicitlyDefined="true" />
+        <PackageReference Include="$(IkvmPackageId)" Version="[$(IkvmVersion)]" IsImplicitlyDefined="true" />
+        <PackageReference Include="IKVM.MSBuild" Version="[$(IkvmVersion)]" IsImplicitlyDefined="true" />
     </ItemGroup>
 
     <!-- Inline tasks require some packages present. -->

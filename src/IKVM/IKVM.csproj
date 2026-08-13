@@ -4,6 +4,7 @@
         <TargetFrameworks>net472;net6.0;net8.0</TargetFrameworks>
         <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageId>IKVM11</PackageId>
         <Description>Java SE 11 Virtual Machine for .NET</Description>
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.config</AllowedOutputExtensionsInPackageBuildOutputFolder>
@@ -25,11 +26,18 @@
     </ItemGroup>
 
     <ItemGroup>
+        <!-- IKVM.Runtime and IKVM.CoreLib use this at runtime.  They are bundled
+             into this distribution package rather than exposed as normal project
+             references, so declare the package explicitly for consumers. -->
+        <PackageReference Include="IKVM.ByteCode" Version="[9.3.13]" />
+
         <ProjectReference Include="..\IKVM.MSBuild\IKVM.MSBuild.msbuildproj" SetTargetFramework="TargetFramework=$(TargetFramework)" SkipGetTargetFrameworkProperties="true">
             <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+            <Version>[$(PackageVersion)]</Version>
         </ProjectReference>
         <ProjectReference Include="..\IKVM.Image\IKVM.Image.csproj" SetTargetFramework="TargetFramework=$(TargetFramework)" SkipGetTargetFrameworkProperties="true">
             <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+            <Version>[$(PackageVersion)]</Version>
         </ProjectReference>
     </ItemGroup>
 

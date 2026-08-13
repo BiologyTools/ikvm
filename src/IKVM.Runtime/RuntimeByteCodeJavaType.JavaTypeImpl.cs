@@ -1024,10 +1024,27 @@ namespace IKVM.Runtime
                 var methodAttribs = MethodAttributes.HideBySig;
 #if IMPORTER
                 var setModifiers = fld.IsInternal || (fld.Modifiers & (Modifiers.Synthetic | Modifiers.Enum)) != 0;
+                // The CLR has no equivalent of the Java 11 nestmate access rule.  A
+                // private field may legally be accessed by the enclosing type or a
+                // sibling nested type in Java, but emitting it as CLR private causes
+                // those otherwise valid accesses to fail with FieldAccessException.
+                // Keep the Java access flags in the Modifiers attribute and expose
+                // the backing CLR field to the generated assembly instead.
+                var needsNestmateFieldAccess = fld.IsPrivate && HasNestmates();
 #endif
                 if (fld.IsPrivate)
                 {
-                    attribs |= FieldAttributes.Private;
+#if IMPORTER
+                    if (needsNestmateFieldAccess)
+                    {
+                        attribs |= FieldAttributes.Assembly;
+                        setModifiers = true;
+                    }
+                    else
+#endif
+                    {
+                        attribs |= FieldAttributes.Private;
+                    }
                 }
                 else if (fld.IsProtected)
                 {
@@ -1113,6 +1130,28 @@ namespace IKVM.Runtime
 
                 return field;
             }
+
+#if IMPORTER
+            bool HasNestmates()
+            {
+                // A '$' is retained as a fallback because older class files can omit
+                // InnerClasses metadata. It also matches the nestmate test used by
+                // RuntimeJavaMember.
+                if (classFile.Name.IndexOf('$') >= 0)
+                    return true;
+
+                var innerClasses = classFile.InnerClasses;
+                if (innerClasses == null)
+                    return false;
+
+                foreach (var innerClass in innerClasses)
+                    if (innerClass.outerClass.IsNotNil &&
+                        classFile.GetConstantPoolClass(innerClass.outerClass) == classFile.Name)
+                        return true;
+
+                return false;
+            }
+#endif
 
             FieldBuilder DefineField(string name, RuntimeJavaType tw, FieldAttributes attribs, bool isVolatile)
             {
@@ -2419,7 +2458,9 @@ namespace IKVM.Runtime
 
                     var m = classFile.Methods[index];
                     MethodBuilder method;
-                    bool setModifiers = false;
+                    // Record the Java-private modifier when a CLR assembly-visible
+                    // member is required for Java 11 nestmate access.
+                    bool setModifiers = m.IsPrivate && HasNestmates();
 
                     if (methods[index].HasCallerID && (m.Modifiers & Modifiers.VarArgs) != 0)
                     {
@@ -2852,12 +2893,16 @@ namespace IKVM.Runtime
                 return mb;
             }
 
-            private static MethodAttributes GetMethodAccess(RuntimeJavaMethod mw)
+            private MethodAttributes GetMethodAccess(RuntimeJavaMethod mw)
             {
                 switch (mw.Modifiers & Modifiers.AccessMask)
                 {
                     case Modifiers.Private:
-                        return MethodAttributes.Private;
+                        // Java nestmates may call one another's private methods and
+                        // constructors. The CLR has no corresponding access rule,
+                        // so retain the Java modifier as metadata while exposing the
+                        // emitted member to the converted assembly.
+                        return HasNestmates() ? MethodAttributes.Assembly : MethodAttributes.Private;
                     case Modifiers.Protected:
                         return MethodAttributes.FamORAssem;
                     case Modifiers.Public:

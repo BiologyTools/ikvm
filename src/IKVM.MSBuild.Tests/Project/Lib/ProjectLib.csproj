@@ -11,7 +11,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="IKVM" Version="$(PackageVersion)" />
+        <PackageReference Include="IKVM11" Version="$(PackageVersion)" />
         <PackageReference Include="IKVM.Image.JRE" Version="$(PackageVersion)" />
         <PackageReference Include="IKVM.Image.JDK" Version="$(PackageVersion)" />
     </ItemGroup>

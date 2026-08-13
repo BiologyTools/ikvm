@@ -86,13 +86,15 @@ IKVM includes build-time support for translating Java libraries to .NET assembli
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="IKVM" Version="Version" />
+  <PackageReference Include="IKVM11" Version="Version" />
 </ItemGroup>
 
 <ItemGroup>
   <IkvmReference Include="..\..\ext\helloworld\helloworld-2.0.jar" />
 </ItemGroup>
 ```
+
+`IKVM11` restores its matching build tasks and runtime image packages transitively. Keep the complete IKVM11 distribution in the same NuGet feed; do not mix it with packages from an older IKVM distribution.
 
 The output assembly will be generated as part of your project's build process and a reference will automatically be added to your project so you can call APIs of the compiled `.jar` assembly. Additional metadata can be added to `IkvmReference` to customize the assembly that is generated.
 
