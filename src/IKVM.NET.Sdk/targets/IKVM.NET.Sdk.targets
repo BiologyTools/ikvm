@@ -22,6 +22,19 @@
 
     <Import Project="$(MSBuildThisFileDirectory)IKVM.NET.Sdk.Java.targets" />
 
+    <!--
+        Image packages collect command-wrapper applications by invoking this target on
+        each project. The .NET 9+ SDK removed the internal publish target formerly
+        used for that purpose, so provide a stable, SDK-owned contract instead.
+    -->
+    <Target Name="PublishIkvmImageBinItem" DependsOnTargets="Publish" Returns="@(_IkvmImageBinItem)">
+        <ItemGroup>
+            <_IkvmImageBinItem Include="$(PublishDir)**\*">
+                <PublishItemPath>%(RecursiveDir)%(Filename)%(Extension)</PublishItemPath>
+            </_IkvmImageBinItem>
+        </ItemGroup>
+    </Target>
+
     <PropertyGroup>
         <IkvmPackageId Condition=" '$(IkvmPackageId)' == '' ">IKVM11</IkvmPackageId>
     </PropertyGroup>

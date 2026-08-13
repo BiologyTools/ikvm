@@ -155,7 +155,7 @@ namespace IKVM.Runtime
 
         private static java.lang.Class TieClassAndWrapper(RuntimeJavaType type, ProtectionDomain protectionDomain)
         {
-            java.lang.Class clazz = new java.lang.Class(null);
+            java.lang.Class clazz = new java.lang.Class((java.lang.ClassLoader)null);
             clazz.typeWrapper = type;
             clazz.pd = protectionDomain;
             type.SetClassObject(clazz);

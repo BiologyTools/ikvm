@@ -1131,7 +1131,6 @@ namespace IKVM.Runtime
                 return field;
             }
 
-#if IMPORTER
             bool HasNestmates()
             {
                 // A '$' is retained as a fallback because older class files can omit
@@ -1151,7 +1150,6 @@ namespace IKVM.Runtime
 
                 return false;
             }
-#endif
 
             FieldBuilder DefineField(string name, RuntimeJavaType tw, FieldAttributes attribs, bool isVolatile)
             {

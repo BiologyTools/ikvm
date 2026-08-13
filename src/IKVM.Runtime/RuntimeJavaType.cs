@@ -257,7 +257,7 @@ namespace IKVM.Runtime
                         }
                         else
                         {
-                            clazz = new java.lang.Class(null);
+                            clazz = new java.lang.Class((java.lang.ClassLoader)null);
                         }
                     }
                     else
