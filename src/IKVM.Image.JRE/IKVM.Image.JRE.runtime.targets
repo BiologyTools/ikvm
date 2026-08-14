@@ -7,6 +7,9 @@
 -->
 
 <Project>
+    <!-- Microsoft.Build.NoTargets does not provide this NuGet-pack query target. -->
+    <Target Name="GetPackageOutputPath" Returns="$(PackageOutputPath)" />
+
     <PropertyGroup>
         <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
         <SupportedImageTargetFrameworks Condition=" '$(SupportedImageTargetFrameworks)' == '' ">$(TargetFrameworks)</SupportedImageTargetFrameworks>
