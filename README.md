@@ -19,7 +19,7 @@ These tasks can be done **without porting source code** to .NET.
 * A .NET implementation of the Java class libraries
 * A tool that translates Java bytecode (JAR files) to .NET IL (DLL or EXE files).
 * Tools that enable Java and .NET interoperability
-* A full JRE/JDK 8 runtime image.
+* A full JRE/JDK 11 runtime image.
 
 ### Run Java Applications with .NET
 
@@ -38,7 +38,7 @@ These tasks can be done **without porting source code** to .NET.
 
 - .NET Framework 4.7.2 and higher (SDK-style projects)
 - .NET 6 and higher
-- Java SE 8
+- Java SE 11
 - Windows x86/x64/ARM64
 - Linux x64/ARM/ARM64 (GLIBC and MUSL)
 - Mac OS X x64/arm64
@@ -50,13 +50,13 @@ Various differences exist between support for all of our different artifacts. Fo
 ### NuGet
 
 ```console
-PM> Install-Package IKVM
+PM> Install-Package IKVM11
 ```
 
 Or, to use `MavenReference`:
 
 ```console
-PM> Install-Package IKVM.Maven.Sdk
+PM> Install-Package IKVM11.Maven.Sdk
 ```
 
 ### Tools
@@ -80,7 +80,7 @@ IKVM supports integration with .NET SDK-style projects as well as low level tool
 
 ### IkvmReference
 
-IKVM includes build-time support for translating Java libraries to .NET assemblies. Install the `IKVM` package in a project that requires references to Java libraries. Use `IkvmReference` within an `ItemGroup` to indicate which Java libraries your project requires.
+IKVM includes build-time support for translating Java libraries to .NET assemblies. Install the `IKVM11` package in a project that requires references to Java libraries. Use `IkvmReference` within an `ItemGroup` to indicate which Java libraries your project requires.
 
 #### Example
 
