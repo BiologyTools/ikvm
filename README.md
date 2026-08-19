@@ -3,6 +3,9 @@
 [![Nuget](https://img.shields.io/nuget/dt/IKVM)](https://www.nuget.org/packages/IKVM)
 [![Discord](https://img.shields.io/badge/Chat-on%20Discord-brightgreen)](https://discord.gg/MpzNd5Tk8P)
 
+## Documentation
+
+Full API and usage documentation is available at [BiologyTools IKVM11 Documentation](https://biologytools.github.io/Documentation/IKVM11/).
 
 ## What is IKVM11?
 
