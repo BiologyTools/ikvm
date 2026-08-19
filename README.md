@@ -65,12 +65,7 @@ The tools are available for download on the [Releases](https://github.com/ikvmne
 
 ### Runtime Images
 
-Both a JRE and JDK runtime image are available. These images are standard JRE or JDK directory structures containing all of the standard tools: javac, jdeps, policytool, keytool, etc. Some Java libraries may require either a JRE or JDK, and if so, the `IKVM.Image.JRE` or `IKVM.Image.JDK` package should be added to your project.
-
-```console
-PM> Install-Package IKVM.Image.JRE
-PM> Install-Package IKVM.Image.JDK
-```
+IKVM11 restores its matching JRE and JDK runtime images transitively. These images provide standard JRE or JDK directory structures containing tools such as `javac`, `jdeps`, `policytool`, and `keytool`.
 
 A standalone JDK distributable is available for download on the [Releases](https://github.com/ikvmnet/ikvm/releases) page. This directory structure should suffice as a `JAVA_HOME` path for standard Java applications.
 
