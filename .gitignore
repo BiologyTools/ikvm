@@ -247,6 +247,9 @@ ModelManifest.xml
 /build/
 /msbuild.binlog
 
+# Generated Doxygen site (rebuild with: doxygen Doxyfile)
+/doc/doxygen/
+
 # Rider
 .idea/
 

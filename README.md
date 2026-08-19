@@ -1,19 +1,19 @@
-# IKVM - Java Virtual Machine for .NET
+# IKVM11 - Java SE 11 Virtual Machine for .NET
 
 [![Nuget](https://img.shields.io/nuget/dt/IKVM)](https://www.nuget.org/packages/IKVM)
 [![Discord](https://img.shields.io/badge/Chat-on%20Discord-brightgreen)](https://discord.gg/MpzNd5Tk8P)
 
 
-## What is IKVM?
+## What is IKVM11?
 
-IKVM is an implementation of Java for the Microsoft .NET platform. It can be used to quickly and easily:
+IKVM11 is an implementation of Java SE 11 for the Microsoft .NET platform. It can be used to quickly and easily:
 
 - Execute compiled Java code (bytecode) on .NET Framework or .NET Core
 - Convert bytecode to a .NET assembly to directly access its API in a .NET project
 
 These tasks can be done **without porting source code** to .NET.
 
-### IKVM Components
+### IKVM11 Components
 
 * A Java virtual machine (JVM) implemented in .NET
 * A .NET implementation of the Java class libraries
@@ -28,11 +28,11 @@ These tasks can be done **without porting source code** to .NET.
    - Executable assemblies can be launched by specifying the class containing the `main()` method to execute at runtime when building using `ikvmc`.
 2. **Dynamically:** By running a Java application using the `java` executable inside of the JDK Runtime Image. The Java bytecode is converted on-the-fly to CIL and executed. The experience should be identical to a normal JDK.
 
-## What IKVM is Not
+## What IKVM11 is Not
 
 - A converter utility to transform Java source code to C# source code
 - A decompiler utitity to transform compiled Java bytecode to C# source code
-- A tool that runs .NET code in Java - all IKVM conversions are Java > .NET
+- A tool that runs .NET code in Java - all IKVM11 conversions are Java > .NET
 
 ## Support
 
@@ -50,7 +50,7 @@ Various differences exist between support for all of our different artifacts. Fo
 ### NuGet
 
 ```console
-PM> Install-Package IKVM
+PM> Install-Package IKVM11
 ```
 
 Or, to use `MavenReference`:
@@ -76,11 +76,11 @@ A standalone JDK distributable is available for download on the [Releases](https
 
 ## Usage
 
-IKVM supports integration with .NET SDK-style projects as well as low level tools for running compiled Java code directly or for advanced build scenarios. The 2 main entry points for integration with the .NET SDK-style projects are `IkvmReference` and `MavenReference`. .NET SDK-style projects can be built on the command line directly or using an IDE that supports them, such as recent versions [Visual Studio](https://visualstudio.microsoft.com/downloads/) or [JetBrains Rider](https://www.jetbrains.com/rider/).
+IKVM11 supports integration with .NET SDK-style projects as well as low level tools for running compiled Java code directly or for advanced build scenarios. The 2 main entry points for integration with the .NET SDK-style projects are `IkvmReference` and `MavenReference`. .NET SDK-style projects can be built on the command line directly or using an IDE that supports them, such as recent versions [Visual Studio](https://visualstudio.microsoft.com/downloads/) or [JetBrains Rider](https://www.jetbrains.com/rider/).
 
 ### IkvmReference
 
-IKVM includes build-time support for translating Java libraries to .NET assemblies. Install the `IKVM` package in a project that requires references to Java libraries. Use `IkvmReference` within an `ItemGroup` to indicate which Java libraries your project requires.
+IKVM11 includes build-time support for translating Java libraries to .NET assemblies. Install the `IKVM11` package in a project that requires references to Java libraries. Use `IkvmReference` within an `ItemGroup` to indicate which Java libraries your project requires.
 
 #### Example
 
@@ -179,7 +179,7 @@ See the [ikvm-maven Readme](https://github.com/ikvmnet/ikvm-maven#readme) for us
 
 ### Notice To Project Owners
 
-The IKVM project recommends that people do not redistribute FOSS Java libraries compiled with IKVM over public systems such as NuGet.org, unless you are the original owner of that software and have a compelling reason.
+The IKVM11 project recommends that people do not redistribute FOSS Java libraries compiled with IKVM11 over public systems such as NuGet.org, unless you are the original owner of that software and have a compelling reason.
 
 Creating copies of FOSS Java libraries and publishing them to distribution mechanisms such as NuGet.org creates eco-system confusion and dependency conflicts downstream. We provide a system so that .NET users of Java libraries can reference those libraries directly out of the standard Java ecosystem mechanisms: Maven Central, etc though IKVM.Maven. Remember, very few libraries exist in a vacuum. Libraries often depend on dozens of other libraries. Two unrelated Java libraries often depend on the same underlying Java library. A complex method of dependency conflict resolution and version unification has to be involved in resolving this hierarchy for any individual downstream project. You are likely going to be introducing duplicate classes into the users of your versions, or causing your users to depend upon the wrong version of other libraries.
 

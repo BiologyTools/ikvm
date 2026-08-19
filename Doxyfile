@@ -1,0 +1,88 @@
+# Doxygen configuration for the IKVM11 source distribution.
+#
+# This configuration follows the HTML-focused BioLib template, adapted for
+# the IKVM11 C# projects and the repository's Markdown user documentation.
+
+DOXYFILE_ENCODING      = UTF-8
+PROJECT_NAME           = IKVM11
+PROJECT_NUMBER         = 11
+PROJECT_BRIEF          = "Java SE 11 Virtual Machine for .NET"
+PROJECT_LOGO           =
+PROJECT_ICON           =
+
+# Generated files are deliberately kept out of the source documentation tree.
+OUTPUT_DIRECTORY       = doc/doxygen
+CREATE_SUBDIRS         = NO
+OUTPUT_LANGUAGE        = English
+
+BRIEF_MEMBER_DESC      = YES
+REPEAT_BRIEF           = YES
+ALWAYS_DETAILED_SEC    = NO
+INLINE_INHERITED_MEMB  = NO
+FULL_PATH_NAMES        = YES
+STRIP_FROM_PATH        = .
+JAVADOC_AUTOBRIEF      = NO
+MARKDOWN_SUPPORT       = YES
+TOC_INCLUDE_HEADINGS   = 5
+AUTOLINK_SUPPORT       = YES
+
+# IKVM11's public API is primarily C#. Include its core runtime, class-library,
+# extension, and tool implementations, plus the user guides.
+INPUT                  = README.md \
+                         doc \
+                         src/IKVM.CoreLib \
+                         src/IKVM.Runtime \
+                         src/IKVM.Java \
+                         src/IKVM.Java.Extensions \
+                         src/IKVM.Tools.Core \
+                         src/IKVM.Tools.Importer \
+                         src/IKVM.Tools.Exporter \
+                         src/IKVM.Tools.Runner \
+                         src/IKVM.Util
+FILE_PATTERNS          = *.cs \
+                         *.md
+RECURSIVE              = YES
+EXCLUDE_PATTERNS       = */bin/* \
+                         */obj/* \
+                         */doc/doxygen/* \
+                         */doc/legacy/* \
+                         */.vs/* \
+                         */.git/* \
+                         */IKVM.*.Tests/* \
+                         */Tests/*
+
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = YES
+HIDE_UNDOC_MEMBERS     = NO
+HIDE_UNDOC_CLASSES     = NO
+HIDE_FRIEND_COMPOUNDS  = NO
+INTERNAL_DOCS          = NO
+CASE_SENSE_NAMES       = YES
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_LOGFILE           = warnings.log
+
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = YES
+REFERENCED_BY_RELATION = NO
+REFERENCES_RELATION    = NO
+
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+SEARCHENGINE           = YES
+GENERATE_TREEVIEW      = YES
+DISABLE_INDEX          = NO
+
+GENERATE_LATEX         = NO
+GENERATE_XML           = NO
+GENERATE_MAN           = NO
+GENERATE_RTF           = NO
+
+HAVE_DOT               = NO
+CLASS_GRAPH            = YES
+UML_LOOK               = NO
+CALL_GRAPH             = NO
+CALLER_GRAPH           = NO
+
+USE_MDFILE_AS_MAINPAGE = README.md

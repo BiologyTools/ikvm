@@ -4,8 +4,13 @@
         <TargetFrameworks>net472;net6.0;net8.0</TargetFrameworks>
         <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+		<Authors>Erik Repo; Jerome Haltom; Shad Storhaug;</Authors>
         <PackageId>IKVM11</PackageId>
         <Description>Java SE 11 Virtual Machine for .NET</Description>
+		<PackageTags>java11;ikvm</PackageTags>
+		<PackageReleaseNotes>IKVM Java 11 initial release.</PackageReleaseNotes>
+		<PackageProjectUrl>https://github.com/BiologyTools/ikvm</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/BiologyTools/ikvm</RepositoryUrl>
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.config</AllowedOutputExtensionsInPackageBuildOutputFolder>
         <NoWarn>NU5118</NoWarn>
