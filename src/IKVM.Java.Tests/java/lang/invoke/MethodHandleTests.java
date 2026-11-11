@@ -70,6 +70,22 @@ public class MethodHandleTests {
     }
 
     @cli.Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute.Annotation()
+    public void canCompileLambdaFormToBytecode() throws Throwable {
+        MethodHandles.Lookup lookup = MethodHandles.lookup();
+        MethodType mt = MethodType.methodType(String.class, String.class, String.class);
+        MethodHandle mh = lookup.findStatic(TestClass.class, "addStringStatic", mt);
+
+        String result = null;
+        for (int i = 0; i < 100; i++) {
+            result = (String)mh.invokeExact("a", "b");
+        }
+
+        if (!"ab".equals(result)) {
+            throw new Exception(result);
+        }
+    }
+
+    @cli.Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute.Annotation()
     public void canInvokeStaticMethodThatReturnsVoid() throws Throwable {
         MethodHandles.Lookup lookup = MethodHandles.lookup();
         MethodType pmt = MethodType.methodType(void.class, int.class, Object.class);

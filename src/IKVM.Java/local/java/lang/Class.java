@@ -144,7 +144,10 @@ public final class Class<T> implements java.io.Serializable,
      * generated.
      */
     private Class(ClassLoader loader) {
-        throw new InternalError();
+        // RuntimeJavaType creates Class instances for synthetic and dynamically
+        // generated types before it can attach their TypeWrapper. These classes
+        // do not have a backing System.Type, so initialize that field to null.
+        this.type = null;
     }
 
     @cli.IKVM.Attributes.HideFromJavaAttribute.Annotation
