@@ -59,7 +59,7 @@
                 <Properties>%(__ClangProjectReference.SetConfiguration);%(__ClangProjectReference.SetPlatform);TargetIdentifier=%(__ClangProjectReference.RuntimeIdentifier)</Properties>
             </_ClangProjectReferencesToTarget>
         </ItemGroup>
-        <MSBuild Projects="@(_ClangProjectReferencesToTarget)" Targets="Build" BuildInParallel="$(BuildInParallel)" RemoveProperties="$(_GlobalPropertiesToRemoveFromProjectReferences);TargetFramework;RuntimeIdentifier;DesignTimeBuild" />
+        <MSBuild Projects="@(_ClangProjectReferencesToTarget)" Targets="Build" BuildInParallel="$(BuildInParallel)" RemoveProperties="$(_GlobalPropertiesToRemoveFromProjectReferences);TargetFramework;RuntimeIdentifier;DesignTimeBuild" Condition=" '$(BuildProjectReferences)' != 'false' " />
         <MSBuild Projects="@(_ClangProjectReferencesToTarget)" Targets="GetOutputItem" BuildInParallel="$(BuildInParallel)" RemoveProperties="$(_GlobalPropertiesToRemoveFromProjectReferences);TargetFramework;RuntimeIdentifier;DesignTimeBuild" RebaseOutputs="true">
             <Output TaskParameter="TargetOutputs" ItemName="_ResolvedClangProjectReferenceTargetOutput" />
         </MSBuild>

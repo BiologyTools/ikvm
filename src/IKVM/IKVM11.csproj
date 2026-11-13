@@ -8,12 +8,15 @@
         <PackageId>IKVM11</PackageId>
         <Description>Java SE 11 Virtual Machine for .NET</Description>
 		<PackageTags>java11;ikvm</PackageTags>
-		<PackageReleaseNotes>IKVM Java 11 initial release.</PackageReleaseNotes>
+		<PackageReleaseNotes>Runtime-created Class instances initialize type to null instead of throwing InternalError.</PackageReleaseNotes>
+		<Version>8.15.1</Version>
+		<PackageVersion>8.15.1</PackageVersion>
 		<PackageProjectUrl>https://github.com/BiologyTools/ikvm</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/BiologyTools/ikvm</RepositoryUrl>
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.config</AllowedOutputExtensionsInPackageBuildOutputFolder>
         <NoWarn>NU5118</NoWarn>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
         <PackIkvmJava>true</PackIkvmJava>
 	    <PackIkvmLibs>true</PackIkvmLibs>

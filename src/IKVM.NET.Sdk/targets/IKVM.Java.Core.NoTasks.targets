@@ -215,8 +215,17 @@ Value = b.ToString();
             <_CompileJavaResponseFileTemp>$(_CompileJavaResponseFile).$([System.Guid]::NewGuid().ToString('N')).tmp</_CompileJavaResponseFileTemp>
         </PropertyGroup>
         <WriteLinesToFile File="$(_CompileJavaResponseFileTemp)" Lines="@(_JavaCompilerArgs)" Overwrite="true" WriteOnlyWhenDifferent="true" />
-        <Copy SourceFiles="$(_CompileJavaResponseFileTemp)" DestinationFiles="$(_CompileJavaResponseFile)" OverwriteReadOnlyFiles="true" Retries="$(IkvmResponseFileRetryCount)" RetryDelayMilliseconds="$(IkvmResponseFileRetryDelayMilliseconds)" />
+        <GetFileHash Files="$(_CompileJavaResponseFileTemp)">
+            <Output TaskParameter="Hash" PropertyName="_NewCompileJavaResponseFileHash" />
+        </GetFileHash>
+        <GetFileHash Files="$(_CompileJavaResponseFile)" Condition="Exists('$(_CompileJavaResponseFile)')">
+            <Output TaskParameter="Hash" PropertyName="_ExistingCompileJavaResponseFileHash" />
+        </GetFileHash>
+        <Copy SourceFiles="$(_CompileJavaResponseFileTemp)" DestinationFiles="$(_CompileJavaResponseFile)" OverwriteReadOnlyFiles="true" Retries="$(IkvmResponseFileRetryCount)" RetryDelayMilliseconds="$(IkvmResponseFileRetryDelayMilliseconds)" Condition="'$(_NewCompileJavaResponseFileHash)' != '$(_ExistingCompileJavaResponseFileHash)'" />
         <Delete Files="$(_CompileJavaResponseFileTemp)" />
+        <ItemGroup>
+            <FileWrites Include="$(_CompileJavaResponseFile)" />
+        </ItemGroup>
     </Target>
 
     <PropertyGroup>
@@ -238,8 +247,7 @@ Value = b.ToString();
         <MakeDir Directories="$(ClassOutputPath)" />
         <MakeDir Directories="$(HeaderOutputPath)" />
 
-        <Message Text="$(JavaCompilerExec) @$(_CompileJavaResponseFile)" />
-        <Exec Command="$(JavaCompilerExec) @$(_CompileJavaResponseFile)" IgnoreStandardErrorWarningFormat="true" />
+        <Exec Command="$(JavaCompilerExec) @&quot;$(_CompileJavaResponseFile)&quot;" IgnoreStandardErrorWarningFormat="true" />
 
         <!-- Remove files that were not modified by this compilation. -->
         <ItemGroup>
@@ -323,14 +331,19 @@ Value = b.ToString();
             <_IkvmCompilerResourceItem Remove="@(_IkvmCompilerResourceItem)" />
             <_IkvmCompilerResourceItem Include="@(_IkvmCompilerJavaResource)" ResourcePath="%(_IkvmCompilerJavaResource.ResourcePath)" Condition=" '%(Identity)' != '' And '%(_IkvmCompilerJavaResource.ResourcePath)' != '' " />
             <_IkvmCompilerArgs Include="@(_IkvmCompilerResourceItem->'-resource &quot;%(ResourcePath)=%(FullPath)&quot;')" />
-            <_IkvmCompilerArgs Include="-out:&quot;$(_AssemblyTempPath)$(TargetName)$(TargetExt)&quot;" />
             <_IkvmCompilerArgs Include="@(_IkvmCompilerConvert->'&quot;%(FullPath)&quot;')" />
         </ItemGroup>
         <PropertyGroup>
             <_IkvmCompilerResponseFileTemp>$(_IkvmCompilerResponseFile).$([System.Guid]::NewGuid().ToString('N')).tmp</_IkvmCompilerResponseFileTemp>
         </PropertyGroup>
         <WriteLinesToFile File="$(_IkvmCompilerResponseFileTemp)" Lines="@(_IkvmCompilerArgs)" Overwrite="true" WriteOnlyWhenDifferent="true" />
-        <Copy SourceFiles="$(_IkvmCompilerResponseFileTemp)" DestinationFiles="$(_IkvmCompilerResponseFile)" OverwriteReadOnlyFiles="true" Retries="$(IkvmResponseFileRetryCount)" RetryDelayMilliseconds="$(IkvmResponseFileRetryDelayMilliseconds)" />
+        <GetFileHash Files="$(_IkvmCompilerResponseFileTemp)">
+            <Output TaskParameter="Hash" PropertyName="_NewIkvmCompilerResponseFileHash" />
+        </GetFileHash>
+        <GetFileHash Files="$(_IkvmCompilerResponseFile)" Condition="Exists('$(_IkvmCompilerResponseFile)')">
+            <Output TaskParameter="Hash" PropertyName="_ExistingIkvmCompilerResponseFileHash" />
+        </GetFileHash>
+        <Copy SourceFiles="$(_IkvmCompilerResponseFileTemp)" DestinationFiles="$(_IkvmCompilerResponseFile)" OverwriteReadOnlyFiles="true" Retries="$(IkvmResponseFileRetryCount)" RetryDelayMilliseconds="$(IkvmResponseFileRetryDelayMilliseconds)" Condition="'$(_NewIkvmCompilerResponseFileHash)' != '$(_ExistingIkvmCompilerResponseFileHash)'" />
         <Delete Files="$(_IkvmCompilerResponseFileTemp)" />
 
         <ItemGroup>
@@ -354,8 +367,7 @@ Value = b.ToString();
         <!-- Build Java assembly into temporary directory. -->
         <RemoveDir Directories="$(_AssemblyTempPath)" Condition="Exists('$(_AssemblyTempPath)')" />
         <MakeDir Directories="$(_AssemblyTempPath)" />
-        <Message Text="$(IkvmCompilerExec) @$(_IkvmCompilerResponseFile)" />
-        <Exec Command="$(IkvmCompilerExec) @$(_IkvmCompilerResponseFile)" IgnoreStandardErrorWarningFormat="true" />
+        <Exec Command="$(IkvmCompilerExec) -out &quot;$(_AssemblyTempPath)$(TargetName)$(TargetExt)&quot; @&quot;$(_IkvmCompilerResponseFile)&quot;" IgnoreStandardErrorWarningFormat="true" />
 
         <!-- Move temporary files in place of permanent files. -->
         <Move SourceFiles="$(_AssemblyTempPath)$(TargetName)$(TargetExt)" DestinationFiles="@(IntermediateAssembly)" OverwriteReadOnlyFiles="true" />

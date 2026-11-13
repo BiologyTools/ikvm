@@ -13,6 +13,12 @@
         </GetBuildProjectPathDependsOn>
     </PropertyGroup>
 
+    <!-- IKVM.Core.MSBuild 0.1.106 selects TaskHostFactory even when running under
+         dotnet MSBuild. Run its netstandard2.0 tasks in-process on Core MSBuild so
+         builds do not require an MSBuild.exe task host from the .NET SDK folder. -->
+    <UsingTask TaskName="GenerateDepsFileExtensions" AssemblyFile="$(IkvmCoreMSBuildTaskAssembly)" Override="true" Condition=" '$(MSBuildRuntimeType)' == 'Core' And Exists('$(IkvmCoreMSBuildTaskAssembly)') " />
+    <UsingTask TaskName="ResolveNearestRuntimeIdentifier" AssemblyFile="$(IkvmCoreMSBuildTaskAssembly)" Override="true" Condition=" '$(MSBuildRuntimeType)' == 'Core' And Exists('$(IkvmCoreMSBuildTaskAssembly)') " />
+
     <Target Name="GetBuildProjectPath" DependsOnTargets="$(GetBuildProjectPathDependsOn)" Returns="$(GetBuildProjectPath)">
         <PropertyGroup>
             <GetBuildProjectPath>$([System.IO.Path]::GetFullPath('$(TargetDir)'))</GetBuildProjectPath>
