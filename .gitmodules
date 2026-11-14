@@ -1,6 +1,6 @@
 [submodule "ext/openjdk"]
 	path = ext/openjdk
-	url = https://github.com/ikvmnet/jdk8u.git
+	url = https://github.com/BiologyTools/jdk8u.git
 	ignore = dirty
 	shallow = true
 [submodule "ext/jtreg"]
