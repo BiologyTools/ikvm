@@ -8,9 +8,9 @@
         <PackageId>IKVM11</PackageId>
         <Description>Java SE 11 Virtual Machine for .NET</Description>
 		<PackageTags>java11;ikvm</PackageTags>
-		<PackageReleaseNotes>Runtime-created Class instances initialize type to null instead of throwing InternalError.</PackageReleaseNotes>
-		<Version>8.15.1</Version>
-		<PackageVersion>8.15.1</PackageVersion>
+		<PackageReleaseNotes>Fix for MacOS Java AWT. Now with full MacOS GUI support.</PackageReleaseNotes>
+		<Version>8.15.2</Version>
+		<PackageVersion>8.15.2</PackageVersion>
 		<PackageProjectUrl>https://github.com/BiologyTools/ikvm</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/BiologyTools/ikvm</RepositoryUrl>
         <IncludeBuildOutput>false</IncludeBuildOutput>
