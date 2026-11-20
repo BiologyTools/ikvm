@@ -59,7 +59,7 @@
     </ItemGroup>
 
     <!-- The .NET 9+ SDK no longer provides the publish-internal targets used here. -->
-    <Target Name="CollectIkvmImageBinItems" BeforeTargets="ExpandIkvmImageItems">
+    <Target Name="CollectIkvmImageBinItems" BeforeTargets="ExpandIkvmImageItems" Condition=" '$(DesignTimeBuild)' != 'true' ">
         <MSBuild Projects="@(PublishProjectReference)"
                  Targets="%(PublishProjectReference.PublishItemGroup)"
                  Properties="%(PublishProjectReference.SetTargetFramework);%(PublishProjectReference.SetRuntimeIdentifier);%(PublishProjectReference.PublishItemMetadata)"
