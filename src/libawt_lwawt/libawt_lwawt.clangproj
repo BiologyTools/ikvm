@@ -67,6 +67,7 @@
         <LibLWAwtFile Include="JavaAccessibilityUtilities.m" />
         <LibLWAwtFile Include="JavaComponentAccessibility.m" />
         <LibLWAwtFile Include="JavaTextAccessibility.m" />
+        <LibLWAwtFile Include="awt.m" />
         <LibLWAwtFile Include="LWCToolkit.m" />
         <LibLWAwtFile Include="GeomUtilities.m" />
         <LibLWAwtFile Include="CPrinterJob.m" />
