@@ -43,7 +43,7 @@ jobs:
           app="$work/mount/BioGTK.app"
           bin="$app/Contents/MacOS/ikvm/$RID/bin"
           for file in libawt_lwawt.dylib libawt_lwawt_impl.dylib; do
-            lipo -verify_arch "$ARCH" "$bin/$file"
+            lipo -archs "$bin/$file" | tr ' ' '\n' | grep -Fx "$ARCH"
             codesign --verify --strict "$bin/$file"
             cp "$bin/$file" "$work/assets/$file"
           done
