@@ -1,0 +1,64 @@
+name: Verify IKVM11 8.15.4 macOS assets
+on:
+  push:
+    branches: [codex/ikvm11-8.15.4]
+    paths: [.github/workflows/verify-ikvm11-macos-assets.yml]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-26
+            rid: osx-arm64
+            arch: arm64
+            installer: BioGTK-arm.dmg
+            digest: a74d9a93398757e8a03d3de8ff91baa6545b5ecd8634225ce0bf21112b290eb1
+          - runner: macos-26-intel
+            rid: osx-x64
+            arch: x86_64
+            installer: BioGTK-intel.dmg
+            digest: 93869b37ca2d4b5fc6eee41e2b49281587dce4346127274f0a573dd53aec5b57
+    steps:
+      - name: Extract and verify the tested AWT libraries
+        env:
+          INSTALLER: ${{ matrix.installer }}
+          DIGEST: ${{ matrix.digest }}
+          ARCH: ${{ matrix.arch }}
+          RID: ${{ matrix.rid }}
+        run: |
+          set -euo pipefail
+          work="$RUNNER_TEMP/ikvm11-assets"
+          mkdir -p "$work/mount" "$work/assets"
+          cd "$work"
+          curl --fail --location --silent --show-error --retry 2 \
+            "https://github.com/BiologyTools/BioGTK/releases/download/Release-6.8.0/$INSTALLER" \
+            -o "$INSTALLER"
+          printf '%s  %s\n' "$DIGEST" "$INSTALLER" | shasum -a 256 -c -
+          hdiutil attach "$INSTALLER" -readonly -nobrowse -mountpoint "$work/mount"
+          trap 'hdiutil detach "$work/mount"' EXIT
+          app="$work/mount/BioGTK.app"
+          bin="$app/Contents/MacOS/ikvm/$RID/bin"
+          for file in libawt_lwawt.dylib libawt_lwawt_impl.dylib; do
+            lipo -verify_arch "$ARCH" "$bin/$file"
+            codesign --verify --strict "$bin/$file"
+            cp "$bin/$file" "$work/assets/$file"
+          done
+          nm -arch "$ARCH" -gU "$work/assets/libawt_lwawt.dylib" | grep -E ' T _JNI_OnLoad$'
+          otool -L "$work/assets/libawt_lwawt.dylib" | grep -F '@rpath/libawt_lwawt_impl.dylib'
+          otool -l "$work/assets/libawt_lwawt.dylib" | grep -F '@loader_path/.'
+          for file in IKVM.Java.dll IKVM.Runtime.dll IKVM.CoreLib.dll; do
+            shasum -a 256 "$app/Contents/MacOS/$file" >> "$work/assets/managed-sha256.txt"
+          done
+          cp "$app/Contents/Resources/OpenJDK-LICENSE.txt" "$work/assets/OpenJDK-LICENSE.txt"
+          cd "$work/assets"
+          shasum -a 256 ./*.dylib > native-sha256.txt
+          cat managed-sha256.txt native-sha256.txt
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ikvm11-awt-${{ matrix.rid }}
+          path: ${{ runner.temp }}/ikvm11-assets/assets
+          if-no-files-found: error
