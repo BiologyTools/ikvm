@@ -8,9 +8,9 @@
         <PackageId>IKVM11</PackageId>
         <Description>Java SE 11 Virtual Machine for .NET</Description>
 		<PackageTags>java11;ikvm</PackageTags>
-		<PackageReleaseNotes>Another Fix for MacOS Java AWT.</PackageReleaseNotes>
-		<Version>8.15.3</Version>
-		<PackageVersion>8.15.3</PackageVersion>
+		<PackageReleaseNotes>This release restores the complete IKVM11 runtime on Intel and Apple Silicon Macs and fixes native Java AWT initialization for embedded ImageJ dialogs. Includes IKVM.Java.dll, IKVM.Runtime.dll, and IKVM.CoreLib.dll for .NET 6 and .NET 8 or later on macOS. Bundles the corrected AWT libraries with the JNI_OnLoad initializer. MSBuild automatically copies the libraries for the target Mac architecture into the IKVM runtime image.</PackageReleaseNotes>
+		<Version>8.15.5</Version>
+		<PackageVersion>8.15.5</PackageVersion>
 		<PackageProjectUrl>https://github.com/BiologyTools/ikvm</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/BiologyTools/ikvm</RepositoryUrl>
         <IncludeBuildOutput>false</IncludeBuildOutput>
